@@ -11,7 +11,7 @@ echo ">>> Pulling latest code..."
 git pull origin main
 
 echo ">>> Rebuilding project..."
-npm ci
+npm ci --include=dev
 npm run build
 
 echo ">>> Copying static assets to standalone folder..."
