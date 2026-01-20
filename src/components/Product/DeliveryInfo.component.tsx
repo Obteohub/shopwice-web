@@ -268,8 +268,8 @@ const DeliveryInfo = () => {
                                     <div className="flex items-start gap-3">
                                         <div className="text-2xl">📱</div>
                                         <div>
-                                            <p className="font-medium text-sm text-gray-900">Card on Delivery</p>
-                                            <p className="text-xs text-gray-600">Pay with debit/credit card upon delivery</p>
+                                            <p className="font-medium text-sm text-gray-900">Card and MOMO Online Payment</p>
+                                            <p className="text-xs text-gray-600">Pay with debit/credit card and MOMO online before delivery</p>
                                         </div>
                                     </div>
                                 </div>
@@ -282,8 +282,8 @@ const DeliveryInfo = () => {
                             </div>
 
                             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                                <p className="text-xs text-blue-900">
-                                    <strong>Note:</strong> Please have exact change ready if paying with cash. Our delivery agents carry limited change.
+                                <p className="text-xs text-blue-900 leading-relaxed">
+                                    <strong>Please Be Ready:</strong> Ensure you are available and your payment is prepared before the rider arrives. Keeping the dispatch rider waiting causes delays for other customers' orders. Help us serve everyone efficiently by being ready to receive your package immediately.
                                 </p>
                             </div>
                         </div>
