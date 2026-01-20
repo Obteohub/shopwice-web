@@ -27,7 +27,10 @@ const CartContents = () => {
   // Fetch Cart Query
   const { data, refetch, loading: isFetching, error } = useQuery(GET_CART, {
     notifyOnNetworkStatusChange: true,
-    onCompleted: (data) => {
+  });
+
+  useEffect(() => {
+    if (data) {
       const updatedCart = getFormattedCart(data);
       if (!updatedCart && !data?.cart?.contents?.nodes?.length) {
         clearWooCommerceSession();
@@ -36,8 +39,8 @@ const CartContents = () => {
       if (updatedCart) {
         syncWithWooCommerce(updatedCart);
       }
-    },
-  });
+    }
+  }, [data, clearWooCommerceSession, syncWithWooCommerce]);
 
   // Update Cart Mutation
   const [updateCart] = useMutation(UPDATE_CART, {

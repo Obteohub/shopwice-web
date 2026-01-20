@@ -78,7 +78,10 @@ const CheckoutForm = () => {
   // Get cart data query
   const { data, refetch } = useQuery(GET_CART, {
     notifyOnNetworkStatusChange: true,
-    onCompleted: () => {
+  });
+
+  useEffect(() => {
+    if (data) {
       const updatedCart = getFormattedCart(data);
       // Only update if we actually got a cart back. 
       // Do NOT clear session here, as it cleans itself up elsewhere or persists.
@@ -86,8 +89,8 @@ const CheckoutForm = () => {
       if (updatedCart) {
         syncWithWooCommerce(updatedCart);
       }
-    },
-  });
+    }
+  }, [data, syncWithWooCommerce]);
 
   // Mutations
   const [updateCustomer, { loading: isUpdatingCustomer }] = useMutation(UPDATE_CUSTOMER, {
