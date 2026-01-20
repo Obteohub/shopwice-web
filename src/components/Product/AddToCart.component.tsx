@@ -76,6 +76,7 @@ export interface IProduct {
   stockQuantity: number;
   sku?: string;
   stockStatus?: string;
+  totalSales?: number;
   related?: {
     nodes: IProduct[];
   };

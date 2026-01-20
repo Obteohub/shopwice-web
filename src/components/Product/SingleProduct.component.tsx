@@ -50,7 +50,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
     }
   }, [product.variations]);
 
-  let { description, shortDescription, image, name, onSale, price, regularPrice, salePrice, productCategories, productBrand, averageRating, reviewCount, galleryImages, reviews, attributes, sku, stockStatus, stockQuantity } =
+  let { description, shortDescription, image, name, onSale, price, regularPrice, salePrice, productCategories, productBrand, averageRating, reviewCount, galleryImages, reviews, attributes, sku, stockStatus, stockQuantity, totalSales } =
     product;
 
   useEffect(() => {
@@ -294,6 +294,12 @@ const SingleProduct = ({ product }: IProductRootObject) => {
                             {currentSku && (
                               <span className="text-xs text-gray-500 font-mono">
                                 SKU: {currentSku}
+                              </span>
+                            )}
+                            {/* Units Sold Display */}
+                            {product.totalSales !== undefined && product.totalSales !== null && (
+                              <span className="text-xs text-gray-500 font-medium">
+                                {product.totalSales} Units Sold
                               </span>
                             )}
                           </div>

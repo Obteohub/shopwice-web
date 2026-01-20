@@ -162,6 +162,7 @@ export const GET_SINGLE_PRODUCT = gql`
         sku
         stockStatus
         stockQuantity
+        totalSales
         crossSell(first: 12) {
         nodes {
           id
@@ -227,6 +228,7 @@ export const GET_SINGLE_PRODUCT = gql`
         id
         sku
         stockStatus
+        totalSales
         crossSell(first: 12) {
         nodes {
           id
