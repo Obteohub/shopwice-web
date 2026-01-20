@@ -1,12 +1,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import Cart from './Cart.component';
 import NativeSearchBox from '../Search/NativeSearchBox.component';
 import MobileNativeSearch from '../Search/MobileNativeSearch.component';
-import CategorySidebar from './CategorySidebar.component';
 import MegaMenu from './MegaMenu.component';
-import LocationPicker from './LocationPicker.component';
+
+const CategorySidebar = dynamic(() => import('./CategorySidebar.component'), { ssr: false });
+const LocationPicker = dynamic(() => import('./LocationPicker.component'), { ssr: false });
 
 /**
  * Navigation for the application.

@@ -127,6 +127,7 @@ const ProductFilters = ({
                   onClick={() => setMinRating(minRating === rating ? 0 : rating)}
                   className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-md transition-colors ${minRating === rating ? 'bg-blue-50 border border-blue-600' : 'hover:bg-gray-50'
                     }`}
+                  aria-label={`Filter by rating ${rating} stars and up`}
                 >
                   <div className="flex">
                     {Array.from({ length: 5 }, (_, i) => (
