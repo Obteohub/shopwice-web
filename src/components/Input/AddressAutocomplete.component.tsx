@@ -60,6 +60,14 @@ const AddressAutocompleteInput = ({ label, name }: IAddressAutocompleteProps) =>
                     if (cityComponent) {
                         setFormValue('city', cityComponent.long_name);
                     }
+
+                    const stateComponent = results[0]?.address_components.find(
+                        (component) => component.types.includes('administrative_area_level_1')
+                    );
+
+                    if (stateComponent) {
+                        setFormValue('state', stateComponent.long_name);
+                    }
                 });
             };
 
@@ -88,6 +96,14 @@ const AddressAutocompleteInput = ({ label, name }: IAddressAutocompleteProps) =>
 
                             if (cityComponent) {
                                 setFormValue('city', cityComponent.long_name);
+                            }
+
+                            const stateComponent = results[0].address_components.find(
+                                (component) => component.types.includes('administrative_area_level_1')
+                            );
+
+                            if (stateComponent) {
+                                setFormValue('state', stateComponent.long_name);
                             }
                         }
                     })
