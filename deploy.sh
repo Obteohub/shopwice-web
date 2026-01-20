@@ -14,6 +14,19 @@ echo ">>> Rebuilding project..."
 npm ci
 npm run build
 
+echo ">>> Copying static assets to standalone folder..."
+# Create necessary directories if they don't exist (though build usually creates them structure)
+mkdir -p .next/standalone/.next
+
+# Copy public folder (images, favicon, etc)
+cp -r public .next/standalone/
+
+# Copy static assets (CSS, JS chunks)
+cp -r .next/static .next/standalone/.next/
+
+# Copy environment variables usually needed if not loaded by system
+cp .env.production .next/standalone/.env.production 2>/dev/null || cp .env .next/standalone/.env 2>/dev/null || echo "No .env file copied"
+
 echo ">>> Checking PM2 Config..."
 cat ecosystem.config.js
 
