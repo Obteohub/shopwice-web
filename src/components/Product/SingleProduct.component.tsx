@@ -160,7 +160,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
           {/* Fourth Row: Gallery */}
           <div className="mb-4 relative group">
             <ProductGallery mainImage={image} galleryImages={galleryImages} />
-            <div className="absolute bottom-4 right-4 z-10">
+            <div className="absolute bottom-4 right-4 z-[20]">
               <ProductActions productName={name} productUrl={`/product/${product.slug}`} productId={product.databaseId} />
             </div>
           </div>

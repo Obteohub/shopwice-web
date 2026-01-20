@@ -114,7 +114,7 @@ const ProductActions = ({ productName, productUrl, productId }: ProductActionsPr
                 {/* Share Button */}
                 <button
                     onClick={handleShare}
-                    className="flex flex-col items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-700 transition-all active:scale-95 group relative border border-gray-100"
+                    className="flex flex-col items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 text-gray-700 transition-all active:scale-95 group relative border border-gray-100 z-30 cursor-pointer"
                     aria-label="Share this product"
                     title="Share"
                 >
@@ -131,7 +131,7 @@ const ProductActions = ({ productName, productUrl, productId }: ProductActionsPr
                 {/* Wishlist Button */}
                 <button
                     onClick={handleWishlistToggle}
-                    className="flex flex-col items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 transition-all active:scale-95 border border-gray-100"
+                    className="flex flex-col items-center justify-center w-10 h-10 bg-white rounded-full shadow-md hover:bg-gray-50 transition-all active:scale-95 border border-gray-100 z-30 cursor-pointer"
                     aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                     title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                 >
