@@ -25,7 +25,7 @@ export const INPUT_FIELDS = [
   },
   {
     id: 7,
-    label: 'State / County',
+    label: 'Region', // Updated to 'Region' as per user request (was State/County)
     name: 'state',
     customValidation: { required: false },
   },
