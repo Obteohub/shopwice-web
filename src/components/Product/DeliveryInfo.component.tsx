@@ -126,7 +126,7 @@ const DeliveryInfo = () => {
                 }
             `}</style>
 
-            <div className={`py-2 mb-2 border-b border-gray-200 ${deliveryData.isActive ? 'accra-delivery-active' : ''}`}>
+            <div className={`py-1 mb-1 ${deliveryData.isActive ? 'accra-delivery-active' : ''}`}>
                 <div className="flex items-start justify-between gap-2">
                     <div className="text-xs text-gray-600 leading-relaxed flex-1">
                         <strong>Greater Accra:</strong> {deliveryData.text}

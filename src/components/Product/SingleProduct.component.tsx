@@ -160,8 +160,8 @@ const SingleProduct = ({ product }: IProductRootObject) => {
           {/* Fourth Row: Gallery */}
           <div className="mb-4 relative group">
             <ProductGallery mainImage={image} galleryImages={galleryImages} />
-            <div className="absolute bottom-4 right-4 z-[20]">
-              <ProductActions productName={name} productUrl={`/product/${product.slug}`} productId={product.databaseId} />
+            <div className="absolute bottom-4 right-4 z-[50]">
+              <ProductActions productName={name} productUrl={`/product/${product.slug}`} productId={product.databaseId} orientation="col" />
             </div>
           </div>
 
@@ -178,9 +178,9 @@ const SingleProduct = ({ product }: IProductRootObject) => {
                           {isRefurbished && (
                             <span className="text-[10px] uppercase font-extrabold text-blue-700 mb-0.5">Refurbished Price</span>
                           )}
-                          <p className="text-2xl font-bold text-gray-900 leading-none">
+                          <p className="text-2xl font-bold text-blue-600 leading-none">
                             {product.variations
-                              ? filteredVariantPrice(price, '')
+                              ? price
                               : salePrice}
                           </p>
                         </div>
@@ -189,9 +189,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
                             <span className="text-[10px] uppercase font-extrabold text-gray-400 mb-0.5">Brand New Price</span>
                           )}
                           <p className="text-lg text-gray-500 line-through leading-none">
-                            {product.variations
-                              ? filteredVariantPrice(price, 'right')
-                              : regularPrice}
+                            {regularPrice}
                           </p>
                         </div>
                       </div>
@@ -217,7 +215,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
                       })()}
                     </div>
                   ) : (
-                    <p className="text-2xl font-bold text-gray-900">{price}</p>
+                    <p className="text-2xl font-bold text-blue-600">{price}</p>
                   )}
 
                   {isRefurbished && (
@@ -283,22 +281,32 @@ const SingleProduct = ({ product }: IProductRootObject) => {
 
                       return (
                         <>
-                          <div className="flex items-center gap-3">
-                            {!showEmergencyStock && (
+                          <div className="flex items-center gap-2 text-xs flex-wrap">
+                            {/* 1. Stock Status */}
+                            {currentStockQuantity !== null && currentStockQuantity !== undefined ? (
                               <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStockStatusColor(currentStockStatus, currentStockQuantity || 0)} capitalized`}
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium border ${getStockStatusColor(currentStockStatus, currentStockQuantity || 0)} capitalized`}
                               >
-                                {currentStockQuantity ? `${currentStockQuantity} in stock` : (currentFormattedStockStatus || 'In Stock')}
+                                {`${currentStockQuantity} in stock`}
+                              </span>
+                            ) : (
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium border ${getStockStatusColor(currentStockStatus, currentStockQuantity || 0)} capitalized`}
+                              >
+                                {currentFormattedStockStatus || 'In Stock'}
                               </span>
                             )}
+
+                            {/* 2. SKU */}
                             {currentSku && (
-                              <span className="text-xs text-gray-500 font-mono">
+                              <span className="text-gray-600 font-mono border-l border-gray-300 pl-2">
                                 SKU: {currentSku}
                               </span>
                             )}
-                            {/* Units Sold Display */}
-                            {product.totalSales !== undefined && product.totalSales !== null && (
-                              <span className="text-xs text-gray-500 font-medium">
+
+                            {/* 3. Units Sold */}
+                            {product.totalSales && product.totalSales > 0 && (
+                              <span className="text-gray-600 font-medium border-l border-gray-300 pl-2">
                                 {product.totalSales} Units Sold
                               </span>
                             )}

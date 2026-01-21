@@ -30,6 +30,12 @@ export const GET_SINGLE_PRODUCT = gql`
         nodes {
           name
           slug
+          ancestors {
+            nodes {
+              name
+              slug
+            }
+          }
         }
       }
       productBrand: terms(where: { taxonomies: PRODUCTBRAND }) {
@@ -51,6 +57,11 @@ export const GET_SINGLE_PRODUCT = gql`
         }
       }
       name
+      seo {
+        title
+        description
+        fullHead
+      }
       related(first: 12) {
         nodes {
           id

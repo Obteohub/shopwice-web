@@ -44,6 +44,7 @@ interface IProductNode {
   image: IImage;
   galleryImages: IGalleryImages;
   productId: number;
+  totalSales?: number;
 }
 
 interface IProduct {

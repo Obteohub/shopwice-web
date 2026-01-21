@@ -66,14 +66,14 @@ const ProductLocationDisplay = () => {
     };
 
     return (
-        <div className="py-3 border-b border-gray-100 mb-2">
+        <div className="py-1 mb-1">
             <div className="flex items-center gap-2 mb-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                 </svg>
-                <span className="text-sm text-gray-600">
-                    Deliver to: <span className="font-bold text-gray-900">{selectedLocation ? selectedLocation.name : 'Select Location'}</span>
+                <span className="text-xs text-gray-600">
+                    Deliver to: <span className="text-gray-600">{selectedLocation ? selectedLocation.name : 'Select Location'}</span>
                 </span>
 
                 {!selectedLocation && !isDetecting && (
@@ -86,8 +86,8 @@ const ProductLocationDisplay = () => {
                 )}
                 {selectedLocation && !isDetecting && (
                     <button
-                        onClick={handleDetectLocation}
-                        className="text-xs text-blue-600 hover:underline ml-auto font-medium"
+                        onClick={() => window.dispatchEvent(new Event('open-location-picker'))}
+                        className="text-xs text-blue-600 hover:underline ml-2 font-medium"
                     >
                         Change
                     </button>

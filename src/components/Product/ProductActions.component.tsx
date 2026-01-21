@@ -4,9 +4,10 @@ interface ProductActionsProps {
     productName: string;
     productUrl: string; // Should be full URL if possible, or relative
     productId: number;
+    orientation?: 'row' | 'col';
 }
 
-const ProductActions = ({ productName, productUrl, productId }: ProductActionsProps) => {
+const ProductActions = ({ productName, productUrl, productId, orientation = 'col' }: ProductActionsProps) => {
     const [isWishlisted, setIsWishlisted] = useState(false);
     const [shareFeedback, setShareFeedback] = useState<string | null>(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -110,7 +111,7 @@ const ProductActions = ({ productName, productUrl, productId }: ProductActionsPr
 
     return (
         <>
-            <div className="flex flex-col gap-3">
+            <div className={`flex ${orientation === 'row' ? 'flex-row' : 'flex-col'} gap-3`}>
                 {/* Share Button */}
                 <button
                     onClick={handleShare}

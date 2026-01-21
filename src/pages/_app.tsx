@@ -19,9 +19,28 @@ Router.events.on('routeChangeStart', () => NProgress.start());
 Router.events.on('routeChangeComplete', () => NProgress.done());
 Router.events.on('routeChangeError', () => NProgress.done());
 
+import { DefaultSeo } from 'next-seo';
+
+// ... existing imports ...
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ApolloProvider client={client}>
+      <DefaultSeo
+        titleTemplate="%s | Shopwice"
+        defaultTitle="Shopwice"
+        openGraph={{
+          type: 'website',
+          locale: 'en_GB',
+          url: 'https://shopwice.com/',
+          siteName: 'Shopwice',
+        }}
+        twitter={{
+          handle: '@shopwice',
+          site: '@shopwice',
+          cardType: 'summary_large_image',
+        }}
+      />
       <CartInitializer />
       <Component {...pageProps} />
     </ApolloProvider>

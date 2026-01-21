@@ -7,7 +7,7 @@ const PaymentInfo = () => {
     return (
         <>
             {/* Payment Information */}
-            <div className="py-2 mb-2 border-b border-gray-200">
+            <div className="py-1 mb-1">
                 <div className="flex items-center gap-1">
                     <div className="text-xs text-gray-600 leading-relaxed">
                         Payment: Pay On Delivery.

@@ -19,6 +19,7 @@ const Navbar = () => {
   return (
     <header className="w-full">
       <nav id="header" className="z-50 w-full bg-white">
+        <LocationPicker variant="headless" />
         {/* Mobile Navbar */}
         <div className="flex flex-col md:hidden w-full border-b border-gray-100">
           <div className="flex items-center justify-between px-4 py-3 bg-white">

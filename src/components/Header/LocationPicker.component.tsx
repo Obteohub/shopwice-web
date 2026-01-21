@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@apollo/client';
 import { FETCH_ALL_LOCATIONS_QUERY } from '@/utils/gql/GQL_QUERIES';
 import { useLocationStore } from '@/stores/locationStore';
 
-const LocationPicker = () => {
+const LocationPicker = ({ variant = 'default' }: { variant?: 'default' | 'headless' }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
     const [isDetecting, setIsDetecting] = useState(false);
     const [geoError, setGeoError] = useState<string | null>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -27,9 +30,23 @@ const LocationPicker = () => {
                 setIsOpen(false);
             }
         };
+
+        const handleOpenEvent = () => setIsOpen(true);
+
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+
+        // Only headless instance listens to the global event to avoid duplicates
+        if (variant === 'headless') {
+            window.addEventListener('open-location-picker', handleOpenEvent);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            if (variant === 'headless') {
+                window.removeEventListener('open-location-picker', handleOpenEvent);
+            }
+        };
+    }, [variant]); // Add variant dependency
 
     const handleDetectLocation = () => {
         setIsDetecting(true);
@@ -85,6 +102,89 @@ const LocationPicker = () => {
         );
     };
 
+    const modalContent = isOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[99999] isolate pointer-events-auto flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsOpen(false)}>
+            <div
+                className="bg-white rounded-xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.stopPropagation()}
+                onTouchStart={e => e.stopPropagation()}
+            >
+                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Select Delivery Location</h3>
+                    <button type="button" onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-200/50 touch-manipulation">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="p-4 border-b border-gray-100">
+                    <button
+                        type="button"
+                        onClick={handleDetectLocation}
+                        disabled={isDetecting}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-sm active:scale-[0.98] group touch-manipulation"
+                    >
+                        {isDetecting ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                            </svg>
+                        )}
+                        <span className="font-semibold">Use My Current Location</span>
+                    </button>
+
+                    {geoError && (
+                        <p className="mt-3 text-[11px] text-red-600 font-medium bg-red-50 p-2.5 rounded-lg text-center border border-red-100">
+                            {geoError}
+                        </p>
+                    )}
+                </div>
+
+                <div className="bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                    Available Regions
+                </div>
+
+                <div className="max-h-[300px] overflow-y-auto custom-scrollbar bg-gray-50/30">
+                    {loading ? (
+                        <div className="py-8 text-center text-gray-500 flex flex-col items-center gap-2">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+                            <span className="text-xs">Loading areas...</span>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-gray-100">
+                            {locations.map((loc: any) => (
+                                <button
+                                    key={loc.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedLocation({ name: loc.name, slug: loc.slug });
+                                        setIsOpen(false);
+                                    }}
+                                    className={`w-full flex items-center justify-between px-5 py-3.5 text-left transition-all touch-manipulation ${selectedLocation?.slug === loc.slug
+                                        ? 'bg-blue-50 text-blue-700 font-bold'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 font-medium'
+                                        }`}
+                                >
+                                    <span className="text-sm">{loc.name}</span>
+                                    {selectedLocation?.slug === loc.slug && (
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-blue-600">
+                                            <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
+
+    if (variant === 'headless') return <>{modalContent}</>;
+
     return (
         <div className="relative" ref={dropdownRef}>
             <button
@@ -109,66 +209,7 @@ const LocationPicker = () => {
                 </svg>
             </button>
 
-            {isOpen && (
-                <div className="absolute top-full left-0 mt-3 w-72 bg-white shadow-xl rounded-lg border border-gray-100 z-[120] py-3 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 pb-3 border-b border-gray-50">
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Delivery Options</h3>
-
-                        <button
-                            onClick={handleDetectLocation}
-                            disabled={isDetecting}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-blue-50 hover:bg-blue-100 text-[#0C6DC9] rounded-lg transition-colors border border-blue-100 group"
-                        >
-                            {isDetecting ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0C6DC9]"></div>
-                            ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 group-hover:scale-110 transition-transform">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                </svg>
-                            )}
-                            <span className="text-sm font-bold">Use My Current Location</span>
-                        </button>
-
-                        {geoError && (
-                            <p className="mt-2 text-[10px] text-red-500 font-medium bg-red-50 p-2 rounded text-center">
-                                {geoError}
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="px-4 py-2 bg-gray-50/50">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase">Or Select Manually</span>
-                    </div>
-
-                    <div className="max-h-60 overflow-y-auto custom-scrollbar">
-                        {loading ? (
-                            <div className="py-4 text-center text-sm text-gray-500">Loading areas...</div>
-                        ) : (
-                            locations.map((loc: any) => (
-                                <button
-                                    key={loc.id}
-                                    onClick={() => {
-                                        setSelectedLocation({ name: loc.name, slug: loc.slug });
-                                        setIsOpen(false);
-                                    }}
-                                    className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors border-l-2 ${selectedLocation?.slug === loc.slug
-                                        ? 'bg-blue-50 border-[#0C6DC9] text-[#0C6DC9] font-bold'
-                                        : 'bg-white border-transparent text-gray-700 hover:bg-gray-50 font-medium'
-                                        }`}
-                                >
-                                    <span className="text-sm">{loc.name}</span>
-                                    {selectedLocation?.slug === loc.slug && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                        </svg>
-                                    )}
-                                </button>
-                            ))
-                        )}
-                    </div>
-                </div>
-            )}
+            {modalContent}
         </div>
     );
 };
