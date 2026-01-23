@@ -30,6 +30,11 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'web.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
         hostname: 'cdn.shopwice.com',
         pathname: '**',
       },
