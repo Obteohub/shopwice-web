@@ -12673,114 +12673,6 @@ module.exports = {
 }
 ````
 
-## File: next.config.js
-````javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  compress: true,
-  compress: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
-  },
-  experimental: {
-    // allowedOrigins removed as it was invalid
-  },
-  // Adding allowedDevOrigins as per Next.js 16 warning
-  // allowedDevOrigins: ['10.96.221.123', 'localhost:3000'],
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'swewoocommerce.dfweb.no',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
-      },
-    ],
-    minimumCacheTTL: 60,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
-  i18n: {
-    locales: ['en'],
-    defaultLocale: 'en',
-  },
-  async headers() {
-    return [
-      {
-        source: '/:all*(svg|jpg|png|webp|avif|js|css|woff2)',
-        locale: false,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ],
-      },
-    ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/graphql',
-        destination: 'https://shopwice.com/graphql',
-      },
-    ];
-  },
-};
-module.exports = nextConfig;
-````
-
 ## File: src/components/Header/Navbar.component.tsx
 ````typescript
 import Link from 'next/link';
@@ -13777,6 +13669,119 @@ export const SEARCH_PRODUCTS_QUERY = gql`
     }
   }
 `;
+````
+
+## File: next.config.js
+````javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  compress: true,
+  compress: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
+  experimental: {
+    // allowedOrigins removed as it was invalid
+  },
+  // Adding allowedDevOrigins as per Next.js 16 warning
+  // allowedDevOrigins: ['10.96.221.123', 'localhost:3000'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'swewoocommerce.dfweb.no',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'web.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '**',
+      },
+    ],
+    minimumCacheTTL: 60,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+  i18n: {
+    locales: ['en'],
+    defaultLocale: 'en',
+  },
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|png|webp|avif|js|css|woff2)',
+        locale: false,
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/graphql',
+        destination: 'https://shopwice.com/graphql',
+      },
+    ];
+  },
+};
+module.exports = nextConfig;
 ````
 
 ## File: src/components/Product/ProductActions.component.tsx
