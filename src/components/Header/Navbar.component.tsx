@@ -7,8 +7,10 @@ import NativeSearchBox from '../Search/NativeSearchBox.component';
 import MobileNativeSearch from '../Search/MobileNativeSearch.component';
 import MegaMenu from './MegaMenu.component';
 
-const CategorySidebar = dynamic(() => import('./CategorySidebar.component'), { ssr: false });
-const LocationPicker = dynamic(() => import('./LocationPicker.component'), { ssr: false });
+import CategorySidebar from './CategorySidebar.component';
+import LocationPicker from './LocationPicker.component';
+// const CategorySidebar = dynamic(() => import('./CategorySidebar.component'), { ssr: false });
+// const LocationPicker = dynamic(() => import('./LocationPicker.component'), { ssr: false });
 
 /**
  * Navigation for the application.

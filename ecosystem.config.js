@@ -1,6 +1,6 @@
 module.exports = {
     apps: [{
-        name: "shopwice-web",
+        name: "shopwice",
         script: "server.js",
         cwd: ".next/standalone",
         args: "",

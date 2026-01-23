@@ -7,7 +7,7 @@ import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
 
 import { GET_BRAND_DATA_BY_SLUG } from '@/utils/gql/TAXONOMY_QUERIES';
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
+import { GetStaticProps, GetStaticPaths, InferGetStaticPropsType } from 'next';
 
 import Link from 'next/link';
 
@@ -22,7 +22,7 @@ const BrandPage = ({
     pageInfo,
     slug,
     subBrands,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
     return (
         <Layout title={`${brandName ? brandName : 'Brand'}`} fullWidth={true}>
             <div className="px-2 md:px-4 pt-1 pb-1">
@@ -67,29 +67,48 @@ const BrandPage = ({
 
 export default withRouter(BrandPage);
 
-export const getServerSideProps: GetServerSideProps = async ({
-    query: { slug },
-}) => {
-    const res = await client.query({
-        query: GET_BRAND_DATA_BY_SLUG,
-        variables: { id: slug, slug: [slug], after: null },
-    });
-
-    const brandData = res.data.productBrand;
-    const productsData = res.data.products;
-
-    const products = productsData ? productsData.nodes : [];
-    const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
-    const brandName = brandData ? brandData.name : slug;
-    const subBrands = brandData?.children?.nodes || [];
-
+export const getStaticPaths: GetStaticPaths = async () => {
     return {
-        props: {
-            brandName: brandName as string,
-            products,
-            pageInfo,
-            slug: slug as string,
-            subBrands,
-        },
+        paths: [],
+        fallback: 'blocking',
     };
+};
+
+export const getStaticProps: GetStaticProps = async ({
+    params,
+}) => {
+    const slug = params?.slug as string;
+
+    try {
+        const res = await client.query({
+            query: GET_BRAND_DATA_BY_SLUG,
+            variables: { id: slug, slug: [slug], after: null },
+            fetchPolicy: 'no-cache'
+        });
+
+        const brandData = res.data.productBrand;
+        const productsData = res.data.products;
+
+        const products = productsData ? productsData.nodes : [];
+        const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
+        const brandName = brandData ? brandData.name : slug;
+        const subBrands = brandData?.children?.nodes || [];
+
+        // Check if brand exists or has content, if strictly needed. 
+        // But for now, if data returns, we render.
+
+        return {
+            props: {
+                brandName: brandName as string,
+                products,
+                pageInfo,
+                slug,
+                subBrands,
+            },
+            revalidate: 60,
+        };
+    } catch (error) {
+        console.error("Error fetching brand data:", error);
+        return { notFound: true };
+    }
 };

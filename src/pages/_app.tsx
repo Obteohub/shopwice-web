@@ -2,7 +2,8 @@
 import Router from 'next/router';
 import NProgress from 'nprogress';
 import { ApolloProvider } from '@apollo/client';
-import Script from 'next/script';
+
+import { Inter } from 'next/font/google';
 
 import client from '@/utils/apollo/ApolloClient';
 import CartInitializer from '@/components/Cart/CartInitializer.component';
@@ -21,7 +22,12 @@ Router.events.on('routeChangeError', () => NProgress.done());
 
 import { DefaultSeo } from 'next-seo';
 
-// ... existing imports ...
+// Font configuration
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -42,7 +48,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         }}
       />
       <CartInitializer />
-      <Component {...pageProps} />
+      <main className={`${inter.variable} font-sans`}>
+        <Component {...pageProps} />
+      </main>
     </ApolloProvider>
   );
 }

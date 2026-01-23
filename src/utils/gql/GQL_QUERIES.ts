@@ -376,7 +376,7 @@ export const FETCH_FIRST_PRODUCTS_FROM_HOODIES_QUERY = `
  */
 export const FETCH_ALL_PRODUCTS_QUERY = gql`
   query MyQuery($after: String) {
-    products(first: 100, after: $after) {
+    products(first: 24, after: $after) {
       pageInfo {
         hasNextPage
         endCursor
@@ -473,13 +473,13 @@ export const FETCH_ALL_CATEGORIES_QUERY = gql`
 `;
 
 export const GET_CATEGORY_DATA_BY_SLUG = gql`
-  query CategoryData($slug: String!, $id: ID!, $after: String) {
+  query CategoryData($slug: String!, $id: ID!, $first: Int = 24, $after: String) {
     productCategory(id: $id, idType: SLUG) {
       id
       name
       description
     }
-    products(first: 100, after: $after, where: { category: $slug }) {
+    products(first: $first, after: $after, where: { category: $slug }) {
       pageInfo {
         hasNextPage
         endCursor

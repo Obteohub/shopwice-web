@@ -1,6 +1,6 @@
-
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const categories = [
     { name: 'Shoes', slug: 'shoes', image: 'https://cdn.shopwice.com/2023/11/shoes.jpg' },
@@ -23,12 +23,14 @@ const FeaturedCategories = () => {
                             href={`/product-category/${cat.slug}`}
                             className="flex flex-col items-center group"
                         >
-                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-[3px] border-[#0C6DC9] group-hover:border-[#F07F02] transition-all duration-300 p-1 bg-white shadow-sm">
+                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-[3px] border-[#0C6DC9] group-hover:border-[#F07F02] transition-all duration-300 p-1 bg-white shadow-sm relative">
                                 <div className="w-full h-full rounded-full overflow-hidden relative">
-                                    <img
+                                    <Image
                                         src={cat.image}
                                         alt={cat.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        fill
+                                        sizes="(max-width: 768px) 100px, 150px"
+                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
                                 </div>
                             </div>

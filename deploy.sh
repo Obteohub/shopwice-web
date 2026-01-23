@@ -1,11 +1,12 @@
 #!/bin/bash
+set -e # Exit on error
 
 # Deployment Fix Script for Vultr/CloudPanel
 # Usage: ./deploy.sh
 
-echo ">>> Stopping shopwice-web process..."
+echo ">>> Stopping shopwice process..."
 # Using || true to prevent script failure if app doesn't exist yet
-pm2 delete shopwice-web || true
+pm2 delete shopwice || true
 
 echo ">>> Pulling latest code..."
 git pull origin main

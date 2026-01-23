@@ -44,7 +44,7 @@ export const useInfiniteScroll = ({
             // Determine query and variables
             const activeQuery = query || GET_CATEGORY_DATA_BY_SLUG;
             const activeVariables = {
-                first: 20, // Default to 20 if not specified
+                first: 24, // Default to 24 if not specified
                 ...queryVariables,
                 after: endCursor,
                 // Ensure slug and id are present if the query might need them

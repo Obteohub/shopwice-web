@@ -16,26 +16,46 @@ const MegaMenu = () => {
     const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
 
     useEffect(() => {
-        fetch(process.env.NEXT_PUBLIC_GRAPHQL_URL as string, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'omit',
-            cache: 'force-cache',
-            body: JSON.stringify({
-                query: require('graphql').print(FETCH_ALL_CATEGORIES_QUERY)
-            }),
-        })
-            .then(res => res.json())
-            .then(json => {
-                if (json.errors) throw new Error(json.errors[0].message);
-                setData(json.data);
+        const CACHE_KEY = 'shopwice_menu_cache';
+        const cachedData = localStorage.getItem(CACHE_KEY);
+
+        if (cachedData) {
+            try {
+                const parsedData = JSON.parse(cachedData);
+                setData(parsedData);
                 setLoading(false);
+                // Optional: Re-fetch in background to update cache if needed, but per user request "store it", we'll trust the cache for now or simple "stale-while-revalidate" if complex.
+                // For this task, we prioritize the cache.
+            } catch (e) {
+                console.error("Error parsing menu cache", e);
+                localStorage.removeItem(CACHE_KEY);
+            }
+        }
+
+        // Always fetch if no cache, or maybe fetch to update cache? for now strict cache check as requested
+        if (!cachedData) {
+            fetch(process.env.NEXT_PUBLIC_GRAPHQL_URL as string, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'omit',
+                cache: 'force-cache',
+                body: JSON.stringify({
+                    query: require('graphql').print(FETCH_ALL_CATEGORIES_QUERY)
+                }),
             })
-            .catch(err => {
-                console.error('MegaMenu Fetch Error:', err);
-                setError(err);
-                setLoading(false);
-            });
+                .then(res => res.json())
+                .then(json => {
+                    if (json.errors) throw new Error(json.errors[0].message);
+                    setData(json.data);
+                    setLoading(false);
+                    localStorage.setItem(CACHE_KEY, JSON.stringify(json.data));
+                })
+                .catch(err => {
+                    console.error('MegaMenu Fetch Error:', err);
+                    setError(err);
+                    setLoading(false);
+                });
+        }
     }, []);
 
     if (loading) return <div className="h-12 bg-[#0C6DC9]"></div>;

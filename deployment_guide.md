@@ -18,8 +18,8 @@ Ensure your server is set up with the following:
 
 1.  **Clone the Repository**:
     ```bash
-    git clone <your-repo-url> shopwice-web
-    cd shopwice-web
+    git clone <your-repo-url> shopwice
+    cd shopwice
     ```
 
 2.  **Environment Variables**:
@@ -44,7 +44,7 @@ To deploy or update the application, simply run the deployment script from the p
 ```
 
 ### What the script does:
-1.  **Stops existing instance**: Safely stops the `shopwice-web` service if running.
+1.  **Stops existing instance**: Safely stops the `shopwice` service if running.
 2.  **Updates Code**: Pulls the latest changes from the `main` branch.
 3.  **Rebuilds**: Installs dependencies and builds the Next.js application.
 4.  **Prepares Standalone**: Copies necessary assets (public folder, static files) to the standalone build directory.
@@ -64,10 +64,10 @@ If you encounter permission errors during the script execution:
 ### Logs
 To view the application logs:
 ```bash
-pm2 logs shopwice-web
+pm2 logs shopwice
 ```
 
 ### App Not Starting
 If PM2 shows the app as "errored" or it restarts incorrectly:
-1.  Check logs: `pm2 logs shopwice-web --lines 100`
+1.  Check logs: `pm2 logs shopwice --lines 100`
 2.  Ensure `.env.production` exists in the root (the script copies it to the standalone folder automatically).

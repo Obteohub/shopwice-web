@@ -1,11 +1,14 @@
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import Hero from '@/components/Index/Hero.component';
 import FeaturedCategories from '@/components/Index/FeaturedCategories.component';
-import WhyChooseUs from '@/components/Index/WhyChooseUs.component';
-import PromoBoxes from '@/components/Index/PromoBoxes.component';
-import InfoBanner from '@/components/Index/InfoBanner.component';
-import Newsletter from '@/components/Index/Newsletter.component';
-import ProductList from '@/components/Product/ProductList.component';
+
+// Dynamic Imports for below-the-fold content
+const WhyChooseUs = dynamic(() => import('@/components/Index/WhyChooseUs.component'));
+const PromoBoxes = dynamic(() => import('@/components/Index/PromoBoxes.component'));
+const InfoBanner = dynamic(() => import('@/components/Index/InfoBanner.component'));
+const Newsletter = dynamic(() => import('@/components/Index/Newsletter.component'));
+const ProductList = dynamic(() => import('@/components/Product/ProductList.component'));
 import Layout from '@/components/Layout/Layout.component';
 
 // Utilities

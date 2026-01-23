@@ -72,6 +72,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ mainImage, galleryImage
                             fill
                             className="object-cover object-center"
                             priority={index === 0}
+                            {...(index === 0 ? { fetchPriority: "high" } : {})}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 800px"
                             quality={90}
                         />

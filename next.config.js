@@ -3,6 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   compress: true,
   output: 'standalone',
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
+  experimental: {
+    // allowedOrigins removed as it was invalid
+  },
+  // Adding allowedDevOrigins as per Next.js 16 warning
+  // allowedDevOrigins: ['10.96.221.123', 'localhost:3000'],
   images: {
     remotePatterns: [
       {
@@ -41,6 +49,9 @@ const nextConfig = {
         pathname: '**',
       },
     ],
+    minimumCacheTTL: 60,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   i18n: {
     locales: ['en'],

@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
       },
       backgroundImage: {
         'hero-background': "url('/images/hero.jpg')",

@@ -1,5 +1,6 @@
 // Imports
 import { withRouter } from 'next/router';
+import { useRouter } from 'next/router';
 
 // Components
 import SingleProduct from '@/components/Product/SingleProduct.component';
@@ -11,25 +12,38 @@ import client from '@/utils/apollo/ApolloClient';
 // Types
 import type {
   NextPage,
-  GetServerSideProps,
-  InferGetServerSidePropsType,
+  GetStaticProps,
+  GetStaticPaths,
+  InferGetStaticPropsType,
 } from 'next';
 
 // GraphQL
-import { GET_SINGLE_PRODUCT } from '@/utils/gql/GQL_QUERIES';
+import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
 import { NextSeo, ProductJsonLd } from 'next-seo';
 
 /**
  * Display a single product with dynamic pretty urls
  * @function Produkt
- * @param {InferGetServerSidePropsType<typeof getServerSideProps>} products
+ * @param {InferGetStaticPropsType<typeof getStaticProps>} products
  * @returns {JSX.Element} - Rendered component
  */
 const Produkt: NextPage = ({
   product,
   networkStatus,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const router = useRouter();
   const hasError = networkStatus === '8';
+
+  // Handle fallback state
+  if (router.isFallback) {
+    return (
+      <Layout title="Loading..." fullWidth>
+        <div className="flex justify-center items-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   // --- SEO Preparation ---
   // Safely extract data
@@ -109,11 +123,11 @@ const Produkt: NextPage = ({
         {product ? (
           <SingleProduct product={product} />
         ) : (
-          <div className="mt-8 text-2xl text-center">Laster produkt ...</div>
+          <div className="mt-8 text-2xl text-center">Loading product...</div>
         )}
         {hasError && (
           <div className="mt-8 text-2xl text-center">
-            Feil under lasting av produkt ...
+            Error loading product...
           </div>
         )}
       </Layout>
@@ -123,25 +137,31 @@ const Produkt: NextPage = ({
 
 export default withRouter(Produkt);
 
-export const getServerSideProps: GetServerSideProps = async ({
-  params,
-  query,
-  res,
-}) => {
-  // Handle legacy URLs with ID parameter by removing it
-  if (query.id) {
-    res.setHeader('Location', `/produkt/${params?.slug}`);
-    res.statusCode = 301;
-    res.end();
-    return { props: {} };
-  }
-
-  const { data, loading, networkStatus } = await client.query({
-    query: GET_SINGLE_PRODUCT,
-    variables: { slug: params?.slug },
-  });
-
+export const getStaticPaths: GetStaticPaths = async () => {
   return {
-    props: { product: data.product, loading, networkStatus },
+    paths: [],
+    fallback: 'blocking',
   };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  try {
+    const { data, loading, networkStatus } = await client.query({
+      query: GET_SINGLE_PRODUCT,
+      variables: { slug: params?.slug },
+      fetchPolicy: 'no-cache'
+    });
+
+    if (!data?.product) {
+      return { notFound: true };
+    }
+
+    return {
+      props: { product: data.product, loading, networkStatus },
+      revalidate: 60, // Revalidate every 60 seconds
+    };
+  } catch (error) {
+    console.error(error);
+    return { notFound: true };
+  }
 };

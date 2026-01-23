@@ -20,25 +20,46 @@ const DesktopSideMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
     useEffect(() => {
         if (isOpen && !data) {
             setLoading(true);
-            fetch(process.env.NEXT_PUBLIC_GRAPHQL_URL as string, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'omit',
-                cache: 'force-cache',
-                body: JSON.stringify({
-                    query: require('graphql').print(FETCH_ALL_CATEGORIES_QUERY)
-                }),
-            })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.errors) throw new Error(json.errors[0].message);
-                    setData(json.data);
+            const CACHE_KEY = 'shopwice_menu_cache';
+            const cachedData = localStorage.getItem(CACHE_KEY);
+
+            if (cachedData) {
+                try {
+                    const parsedData = JSON.parse(cachedData);
+                    setData(parsedData);
                     setLoading(false);
+                } catch (e) {
+                    console.error("Error parsing menu cache", e);
+                    localStorage.removeItem(CACHE_KEY);
+                }
+            }
+
+            // Only fetch if no cache found (or cache invalid)
+            if (!cachedData) {
+                fetch(process.env.NEXT_PUBLIC_GRAPHQL_URL as string, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'omit',
+                    cache: 'force-cache',
+                    body: JSON.stringify({
+                        query: require('graphql').print(FETCH_ALL_CATEGORIES_QUERY)
+                    }),
                 })
-                .catch(err => {
-                    console.error('DesktopSideMenu Fetch Error:', err);
-                    setLoading(false);
-                });
+                    .then(res => res.json())
+                    .then(json => {
+                        if (json.errors) throw new Error(json.errors[0].message);
+                        setData(json.data);
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(json.data));
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        console.error('DesktopSideMenu Fetch Error:', err);
+                        setLoading(false);
+                    });
+            } else {
+                // cache hit, ensure loading is off
+                setLoading(false);
+            }
         }
     }, [isOpen, data]);
 

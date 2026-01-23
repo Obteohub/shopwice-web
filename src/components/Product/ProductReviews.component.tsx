@@ -34,7 +34,12 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ reviews }) => {
             {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0">
                     <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{review.author.node.name}</h4>
+                        <div>
+                            <h4 className="font-semibold text-sm">{review.author.node.name}</h4>
+                            <div className="mt-1">
+                                <StarRating rating={review.rating || 0} size={14} />
+                            </div>
+                        </div>
                         <span className="text-xs text-gray-500">
                             {new Date(review.date).toLocaleDateString()}
                         </span>
