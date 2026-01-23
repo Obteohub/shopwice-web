@@ -38,9 +38,7 @@ const Produkt: NextPage = ({
   if (router.isFallback) {
     return (
       <Layout title="Loading..." fullWidth>
-        <div className="flex justify-center items-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
+        <div className="mt-8 text-2xl text-center">Loading...</div>
       </Layout>
     );
   }
