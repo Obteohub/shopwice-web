@@ -250,7 +250,7 @@ const ProductList = ({
         {/* Loading Indicator */}
         {isLoading && (
           <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+            <div className="text-lg text-orange-500">Loading products...</div>
           </div>
         )}
 

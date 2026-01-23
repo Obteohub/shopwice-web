@@ -26,7 +26,7 @@ const QuantityControl: React.FC<QuantityControlProps> = ({
             </button>
             <div className="w-12 text-center text-sm font-medium text-gray-900">
                 {loading ? (
-                    <span className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></span>
+                    <span className="text-gray-400">...</span>
                 ) : (
                     quantity
                 )}

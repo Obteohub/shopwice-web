@@ -139,7 +139,7 @@ const DesktopSideMenu = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                 <div className="flex-1 overflow-y-auto">
                     {loading ? (
                         <div className="flex justify-center items-center h-40">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0C6DC9]"></div>
+                            <div className="text-lg text-[#0C6DC9]">Loading...</div>
                         </div>
                     ) : (
                         <div className="py-2">

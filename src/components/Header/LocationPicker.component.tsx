@@ -125,7 +125,7 @@ const LocationPicker = ({ variant = 'default' }: { variant?: 'default' | 'headle
                         className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all shadow-sm active:scale-[0.98] group touch-manipulation"
                     >
                         {isDetecting ? (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span className="text-xs font-bold">...</span>
                         ) : (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -149,7 +149,6 @@ const LocationPicker = ({ variant = 'default' }: { variant?: 'default' | 'headle
                 <div className="max-h-[300px] overflow-y-auto custom-scrollbar bg-gray-50/30">
                     {loading ? (
                         <div className="py-8 text-center text-gray-500 flex flex-col items-center gap-2">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
                             <span className="text-xs">Loading areas...</span>
                         </div>
                     ) : (
