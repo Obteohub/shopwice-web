@@ -52,7 +52,7 @@ const Navbar = () => {
                 alt="Shopwice"
                 width={120}
                 height={35}
-                className="h-8 w-auto object-contain"
+                className="object-contain"
                 priority
               />
             </Link>
@@ -83,7 +83,7 @@ const Navbar = () => {
                   alt="Shopwice"
                   width={150}
                   height={45}
-                  className="h-10 w-auto object-contain"
+                  className="object-contain"
                   priority
                 />
               </Link>

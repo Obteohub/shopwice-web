@@ -117,7 +117,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
   return (
     <section className="bg-white mb-[8rem] md:mb-12">
       {isLoading ? (
-        <div className="h-56 mt-20">
+        <div className="min-h-[60vh] flex flex-col items-center justify-center">
           <p className="text-xl font-bold text-center">Loading product...</p>
           <br />
           <LoadingSpinner />

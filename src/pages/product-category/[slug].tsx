@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GetServerSideProps } from 'next';
+import { GetStaticProps, GetStaticPaths } from 'next';
 import Layout from '@/components/Layout/Layout.component';
 import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
@@ -47,7 +47,14 @@ const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps)
 
 export default CategoryPage;
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [],
+        fallback: 'blocking',
+    };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
     const slug = params?.slug as string;
 
     try {
@@ -56,6 +63,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             variables: { slug, id: slug },
         });
 
+        if (!data?.productCategory) {
+            return { notFound: true };
+        }
+
         return {
             props: {
                 category: data.productCategory,
@@ -63,6 +74,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
                 pageInfo: data.products.pageInfo,
                 slug,
             },
+            revalidate: 60,
         };
     } catch (error) {
         console.error('Error fetching category data:', error);
