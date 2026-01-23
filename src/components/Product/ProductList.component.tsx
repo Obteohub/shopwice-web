@@ -16,6 +16,7 @@ interface ProductListProps {
   query?: any;
   queryVariables?: Record<string, any>;
   context?: any;
+  totalCount?: number;
 }
 
 const ProductList = ({
@@ -25,7 +26,8 @@ const ProductList = ({
   slug,
   query,
   queryVariables,
-  context = { useDirectFetch: true, fetchOptions: { credentials: 'omit' } }
+  context = { useDirectFetch: true, fetchOptions: { credentials: 'omit' } },
+  totalCount
 }: ProductListProps) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -111,10 +113,11 @@ const ProductList = ({
           <div className="flex items-center flex-shrink-1 min-w-0 overflow-hidden">
             <p className="text-xs md:text-sm text-gray-500 font-normal truncate">
               <span className="md:inline hidden">Found </span>
-              <span className="font-semibold text-gray-900">{filteredProducts.length}</span>
+              <span className="font-semibold text-gray-900">{totalCount || filteredProducts.length}</span>
               <span className="md:inline hidden"> products</span>
               <span className="md:hidden inline"> items found</span>
             </p>
+
           </div>
 
           {/* Sorting & Filter Button */}
@@ -293,8 +296,8 @@ const ProductList = ({
               onClick={loadPrevious}
               disabled={!hasPreviousPage}
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${hasPreviousPage
-                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 shadow-sm'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-100'
+                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 shadow-sm'
+                : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-100'
                 }`}
             >
               Previous
@@ -308,8 +311,8 @@ const ProductList = ({
               onClick={loadNext}
               disabled={!hasNextPage}
               className={`px-6 py-2.5 rounded-lg font-medium transition-all ${hasNextPage
-                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200'
-                  : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-100'
+                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-200'
+                : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-100'
                 }`}
             >
               Next

@@ -1,9 +1,9 @@
 module.exports = {
     apps: [{
         name: "shopwice",
-        script: "server.js",
-        cwd: ".next/standalone",
-        args: "",
+        script: "npm",
+        cwd: ".",
+        args: "start",
         instances: "max",
         exec_mode: "cluster",
         env: {

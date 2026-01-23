@@ -478,6 +478,7 @@ export const GET_CATEGORY_DATA_BY_SLUG = gql`
       id
       name
       description
+      count
     }
     products(first: $first, after: $after, where: { category: $slug }) {
       pageInfo {

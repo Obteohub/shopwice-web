@@ -39,6 +39,7 @@ const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps)
                     slug={slug}
                     query={GET_CATEGORY_DATA_BY_SLUG}
                     queryVariables={{ slug, id: slug }}
+                    totalCount={category?.count}
                 />
             </div>
         </Layout>
