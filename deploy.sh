@@ -8,6 +8,9 @@ echo ">>> Stopping shopwice process..."
 # Using || true to prevent script failure if app doesn't exist yet
 pm2 delete shopwice || true
 
+echo ">>> Stashing any local changes (e.g. generated sitemaps)..."
+git stash
+
 echo ">>> Pulling latest code..."
 git pull origin main
 
