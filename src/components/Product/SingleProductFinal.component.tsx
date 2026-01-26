@@ -119,8 +119,8 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                 {/* Row 2: Main Grid (Gallery Left / Details Right) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-14">
 
-                    {/* Left Column: Gallery & Images - lg:col-span-7 */}
-                    <div className="lg:col-span-7 w-full flex flex-col gap-8">
+                    {/* Left Column: Gallery & Images - lg:col-span-5 */}
+                    <div className="lg:col-span-5 w-full flex flex-col gap-8">
                         <div className="relative group rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
                             <ProductGallery key="vertical-gallery" mainImage={image} galleryImages={galleryImages} />
                             <div className="absolute bottom-4 right-4 z-[50]">
@@ -185,8 +185,8 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                         </div>
                     </div>
 
-                    {/* Right Column: Details & Actions - lg:col-span-5 */}
-                    <div className="lg:col-span-5 w-full">
+                    {/* Right Column: Details & Actions - lg:col-span-7 */}
+                    <div className="lg:col-span-7 w-full">
                         <div className="sticky top-24 flex flex-col gap-6">
                             {/* Header Info */}
                             <div className="flex flex-col gap-2">
