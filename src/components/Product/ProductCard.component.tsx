@@ -90,9 +90,7 @@ const ProductCard = ({
             <Image
               src={image.sourceUrl}
               alt={name}
-              fill
-              className="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105"
-              priority={databaseId === 1}
+              fill className="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
@@ -144,7 +142,7 @@ const ProductCard = ({
         {onSale ? (
           <div className="flex flex-col items-start gap-0.5">
             <div className="flex items-center justify-start gap-1.5">
-              <span className="text-sm font-bold text-blue-600 tracking-tighter">{formattedSalePrice}</span>
+              <span className="text-xs font-bold text-blue-600 tracking-tighter">{formattedSalePrice}</span>
               <span className="text-xs text-gray-500 line-through tracking-tighter">{formattedRegularPrice}</span>
             </div>
             {savingsAmount && (
@@ -154,7 +152,7 @@ const ProductCard = ({
             )}
           </div>
         ) : (
-          <span className="text-lg font-bold text-gray-900">{formattedPrice}</span>
+          <span className="text-sm font-bold text-blue-600">{formattedPrice}</span>
         )}
       </div>
     </div>

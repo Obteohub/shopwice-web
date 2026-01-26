@@ -32,7 +32,7 @@ const Produkt: NextPage = ({
   networkStatus,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
-  const hasError = networkStatus === '8';
+  const hasError = networkStatus === 8;
 
   // Handle fallback state
   if (router.isFallback) {

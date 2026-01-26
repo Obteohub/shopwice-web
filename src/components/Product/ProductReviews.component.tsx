@@ -21,9 +21,9 @@ interface ProductReviewsProps {
 const ProductReviews: React.FC<ProductReviewsProps> = ({ reviews }) => {
     if (!reviews || reviews.length === 0) {
         return (
-            <div className="py-8 bg-gray-50 rounded-lg text-center">
+            <div className="py-8 bg-gray-100 rounded-lg text-center">
                 <p className="text-gray-500 mb-2">No reviews yet</p>
-                <p className="text-sm text-gray-400">Be the first to create a review</p>
+                <p className="text-sm text-gray-500">Only customers who have purchased this product may leave a review</p>
             </div>
         );
     }
@@ -33,7 +33,7 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ reviews }) => {
             <h3 className="text-xl font-bold mb-4">Customer Reviews</h3>
             {reviews.map((review) => (
                 <div key={review.id} className="border-b border-gray-100 pb-6 last:border-0">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-left justify-between mb-2">
                         <div>
                             <h4 className="font-semibold text-sm">{review.author.node.name}</h4>
                             <div className="mt-1">

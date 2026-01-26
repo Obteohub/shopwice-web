@@ -159,7 +159,7 @@ const CategorySidebar = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
                                         <Link
                                             href={`/product-category/${cat.slug}`}
                                             onClick={onClose}
-                                            className="block py-2.5 text-[15px] font-bold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                                            className="block py-2.5 text-[15px] text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
                                         >
                                             {cat.name}
                                         </Link>

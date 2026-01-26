@@ -93,8 +93,8 @@ const client = new ApolloClient({
   link: middleware.concat(
     afterware.concat(
       createHttpLink({
-        // Use the absolute URL directly to bypass Next.js proxy and avoiding sending same-origin cookies
-        uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
+        // Use proxy on client to avoid CORS, absolute URL on server
+        uri: typeof window === 'undefined' ? process.env.NEXT_PUBLIC_GRAPHQL_URL : '/graphql',
         fetch,
         credentials: 'omit',
       }),

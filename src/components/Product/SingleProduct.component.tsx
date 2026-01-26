@@ -130,7 +130,7 @@ const SingleProduct = ({ product }: IProductRootObject) => {
               className="flex items-center gap-2 cursor-pointer hover:opacity-75 transition-opacity"
               onClick={scrollToReviews}
             >
-              <StarRating rating={averageRating || 0} size={16} />
+              <StarRating rating={averageRating || 0} size={15} />
               <span className="text-sm text-gray-500 font-medium">
                 {reviewCount || 0} Reviews
               </span>

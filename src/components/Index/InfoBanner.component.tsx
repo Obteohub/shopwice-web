@@ -13,7 +13,7 @@ const InfoBanner = () => {
                 />
             </div>
 
-            <div className="container mx-auto px-6 d:px-12 relative z-10">
+            <div className="w-full px-6 md:px-12 relative z-10">
                 <div className="max-w-4xl">
                     <h1 className="text-xl md:text-2l font-normal text-[#2c3338] mb-6  tracking-tight">
                         Online Shopping in Ghana

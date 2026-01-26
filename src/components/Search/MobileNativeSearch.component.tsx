@@ -70,12 +70,12 @@ const MobileNativeSearch = () => {
             <form onSubmit={handleSearchSubmit} className="relative flex w-full">
                 <input
                     type="text"
-                    placeholder="Search..."
-                    className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-4 pr-10 text-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    placeholder="Search on shopwice"
+                    className="w-full rounded-full border border-gray-200 bg-gray-50 py-2 pl-4 pr-10 text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <div className="absolute right-3 text-white">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                     </svg>

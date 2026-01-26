@@ -4,13 +4,11 @@ import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import Cart from './Cart.component';
 import NativeSearchBox from '../Search/NativeSearchBox.component';
-import MobileNativeSearch from '../Search/MobileNativeSearch.component';
-import MegaMenu from './MegaMenu.component';
 
-import CategorySidebar from './CategorySidebar.component';
-import LocationPicker from './LocationPicker.component';
-// const CategorySidebar = dynamic(() => import('./CategorySidebar.component'), { ssr: false });
-// const LocationPicker = dynamic(() => import('./LocationPicker.component'), { ssr: false });
+const MobileNativeSearch = dynamic(() => import('../Search/MobileNativeSearch.component'), { ssr: false });
+const MegaMenu = dynamic(() => import('./MegaMenu.component'), { ssr: false });
+const CategorySidebar = dynamic(() => import('./CategorySidebar.component'), { ssr: false });
+const LocationPicker = dynamic(() => import('./LocationPicker.component'), { ssr: false });
 
 /**
  * Navigation for the application.
@@ -134,7 +132,7 @@ const Navbar = () => {
         <MegaMenu />
 
         {/* Mobile Menu Drawer */}
-        <CategorySidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+        {isMenuOpen && <CategorySidebar isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />}
       </nav>
     </header>
   );

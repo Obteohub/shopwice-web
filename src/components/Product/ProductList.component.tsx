@@ -239,7 +239,7 @@ const ProductList = ({
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-x-1 gap-y-2 md:gap-x-3 md:gap-y-6">
-          {filteredProducts.map((product: Product) => (
+          {filteredProducts.map((product: Product, index: number) => (
             <ProductCard
               key={product.databaseId}
               databaseId={product.databaseId}

@@ -15,7 +15,7 @@ const SVGMobileSearchIcon = () => {
       <svg
         className="cursor-pointer"
         onClick={scrollToTop}
-        fill="#fff"
+        fill="#ff4608ff"
         xmlns="https://www.w3.org/2000/svg"
         viewBox="0 0 50 50"
         width="35px"

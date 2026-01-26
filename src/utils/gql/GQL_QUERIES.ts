@@ -349,7 +349,7 @@ export const FETCH_FIRST_PRODUCTS_FROM_HOODIES_QUERY = `
  query MyQuery {
   products(first: 4, where: {category: "Hoodies"}) {
     nodes {
-      productId
+      databaseId
       name
       onSale
       slug
@@ -838,15 +838,193 @@ export const SEARCH_PRODUCTS_QUERY = gql`
               slug
             }
           }
-          allPaColor {
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+
+`;
+
+export const GET_404_PAGE_PRODUCTS = gql`
+  query Get404PageProducts {
+    bestSellers: products(first: 5, where: { orderby: { field: TOTAL_SALES, order: DESC } }) {
+      nodes {
+        databaseId
+        name
+        onSale
+        slug
+        averageRating
+        reviewCount
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
             nodes {
               name
               slug
             }
           }
-          allPaSize {
+          stockQuantity
+          attributes {
             nodes {
               name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          stockQuantity
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+    newest: products(first: 5, where: { orderby: { field: DATE, order: DESC } }) {
+      nodes {
+        databaseId
+        name
+        onSale
+        slug
+        averageRating
+        reviewCount
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          stockQuantity
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          stockQuantity
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+    topRated: products(first: 5, where: { orderby: { field: RATING, order: DESC } }) {
+      nodes {
+        databaseId
+        name
+        onSale
+        slug
+        averageRating
+        reviewCount
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          stockQuantity
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          stockQuantity
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_TOP_RATED_PRODUCTS_QUERY = gql`
+  query FetchTopRatedProducts {
+    products(first: 12, where: { orderby: { field: RATING, order: DESC } }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
             }
           }
           attributes {
@@ -855,20 +1033,375 @@ export const SEARCH_PRODUCTS_QUERY = gql`
               options
             }
           }
-          variations {
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
             nodes {
-              price
-              regularPrice
-              salePrice
-              attributes {
-                nodes {
-                  name
-                  value
-                }
-              }
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
             }
           }
         }
+      }
+    }
+  }
+`;
+
+export const FETCH_BEST_SELLING_PRODUCTS_QUERY = gql`
+  query FetchBestSellingProducts {
+    products(first: 12, where: { orderby: { field: TOTAL_SALES, order: DESC } }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+
+export const FETCH_AIR_CONDITIONER_PRODUCTS_QUERY = gql`
+  query FetchAirConditionerProducts {
+    products(first: 12, where: { category: "air-conditioners" }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_MOBILE_PHONES_ON_SALE_QUERY = gql`
+  query FetchMobilePhonesOnSale {
+    products(first: 12, where: { category: "mobile-phones", onSale: true }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_LAPTOPS_QUERY = gql`
+  query FetchLaptops {
+    products(first: 12, where: { category: "laptops" }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_SPEAKERS_QUERY = gql`
+  query FetchSpeakers {
+    products(first: 12, where: { category: "speakers" }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_TELEVISIONS_QUERY = gql`
+  query FetchTelevisions {
+    products(first: 12, where: { category: "televisions" }) {
+      nodes {
+        databaseId
+        name
+        slug
+        averageRating
+        reviewCount
+        onSale
+        image {
+          sourceUrl
+        }
+        ... on SimpleProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+        ... on VariableProduct {
+          price
+          regularPrice
+          salePrice
+          stockQuantity
+          productCategories {
+            nodes {
+              name
+              slug
+            }
+          }
+          attributes {
+            nodes {
+              name
+              options
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const FETCH_PROMO_PRODUCT_QUERY = gql`
+  query FetchPromoProduct($slug: ID!) {
+    product(id: $slug, idType: SLUG) {
+      databaseId
+      name
+      slug
+      averageRating
+      reviewCount
+      image {
+        sourceUrl
+      }
+      ... on SimpleProduct {
+        price
+        regularPrice
+        salePrice
+      }
+      ... on VariableProduct {
+        price
+        regularPrice
+        salePrice
       }
     }
   }

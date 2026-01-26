@@ -106,7 +106,7 @@ const NativeSearchBox = () => {
                 />
                 <button
                     type="submit"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-orange-500 p-2 text-white hover:bg-orange-600 transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full bg-orange-500 p-2 text-gray-900 hover:bg-orange-600 transition-colors"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
