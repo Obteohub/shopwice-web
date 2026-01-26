@@ -144,6 +144,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   try {
+    console.log('Fetching product for slug:', params?.slug);
     const { data, loading, networkStatus } = await client.query({
       query: GET_SINGLE_PRODUCT,
       variables: { slug: params?.slug },
