@@ -217,6 +217,12 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                                             <p className="text-xs text-green-700 font-bold uppercase tracking-wide">Refurbished - Excellent</p>
                                         </div>
+                                        <button
+                                            onClick={() => setShowWhatIsRefurbishedModal(true)}
+                                            className="text-xs text-gray-500 underline hover:text-blue-600 cursor-pointer"
+                                        >
+                                            What is this?
+                                        </button>
                                     </div>
                                 )}
                             </div>
