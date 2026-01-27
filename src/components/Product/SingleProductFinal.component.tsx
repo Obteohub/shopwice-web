@@ -22,14 +22,14 @@ import ProductLocationDisplay from './ProductLocationDisplay.component';
 import ProductActions from './ProductActions.component';
 
 // Dynamic Imports for Performance
-const ProductReviews = dynamic(() => import('./ProductReviews.component'), {
+const ProductReviewsREST = dynamic(() => import('./ProductReviewsREST.component'), {
     loading: () => <p className="p-4 text-center text-gray-500">Loading reviews...</p>
 });
 const ComparePriceModal = dynamic(() => import('./ComparePriceModal.component'), { ssr: false });
 const WhatIsRefurbishedModal = dynamic(() => import('./WhatIsRefurbishedModal.component'), { ssr: false });
 
 import QuantityControl from '@/components/Cart/QuantityControl.component';
-import RecentRefurbishedReviews from './RecentRefurbishedReviews.component';
+import RecentRefurbishedReviewsREST from './RecentRefurbishedReviewsREST.component';
 
 const SingleProductFinal = ({ product }: { product: any }) => {
     const [selectedVariation, setSelectedVariation] = useState<number>();
@@ -172,7 +172,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                             )}
                             <div ref={reviewsRef} className="scroll-mt-24">
                                 <Accordion title={`Reviews (${reviewCount || 0})`}>
-                                    <ProductReviews reviews={reviews?.nodes || []} />
+                                    <ProductReviewsREST productId={product.databaseId} />
                                 </Accordion>
                             </div>
                             {((productCategories?.nodes && productCategories.nodes.length > 0) || sku) && (
@@ -472,7 +472,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                     </div>
 
                                     {/* Global Refurbished Reviews */}
-                                    {isRefurbished && <RecentRefurbishedReviews />}
+                                    {isRefurbished && <RecentRefurbishedReviewsREST />}
                                 </div>
                             </div>
                         </div>
@@ -510,7 +510,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                     {/* Reviews Mobile */}
                     <div ref={reviewsRef} className="scroll-mt-24">
                         <Accordion title={`Reviews (${reviewCount || 0})`}>
-                            <ProductReviews reviews={reviews?.nodes || []} />
+                            <ProductReviewsREST productId={product.databaseId} />
                         </Accordion>
                     </div>
                     {((productCategories?.nodes && productCategories.nodes.length > 0) || sku) && (
