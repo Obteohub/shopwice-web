@@ -1409,32 +1409,26 @@ export const FETCH_PROMO_PRODUCT_QUERY = gql`
 
 export const GET_RECENT_REVIEWS_QUERY = gql`
   query GetRecentReviews {
-    reviews(first: 50, where: { status: APPROVE }) {
+    products(first: 10, where: { search: "Refurbished" }) {
       nodes {
         id
-        date
-        rating
-        content
-        author {
-          node {
-            name
-            avatar {
-              url
-            }
-          }
+        name
+        slug
+        image {
+          sourceUrl
         }
-        commentOn {
-          ... on Product {
+        reviews(first: 3, where: { status: APPROVE }) {
+          nodes {
             id
-            name
-            slug
-            image {
-              sourceUrl
-            }
-            attributes {
-              nodes {
+            date
+            rating
+            content
+            author {
+              node {
                 name
-                options
+                avatar {
+                  url
+                }
               }
             }
           }

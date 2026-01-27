@@ -24,10 +24,18 @@ const RecentRefurbishedReviews = () => {
         return null;
     }
 
-    // Determine reviews to show
-    const recentRefurbishedReviews = data?.reviews?.nodes?.filter((review: any) =>
-        review.commentOn?.name?.toLowerCase().includes('refurbish')
-    ) || [];
+    // Flatten reviews from products
+    const products = data?.products?.nodes || [];
+    const recentRefurbishedReviews = products.flatMap((product: any) =>
+        (product.reviews?.nodes || []).map((review: any) => ({
+            ...review,
+            commentOn: {
+                name: product.name,
+                slug: product.slug
+            }
+        }))
+    ).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5); // Keep top 5
 
     console.log("Refurbished Reviews Found:", recentRefurbishedReviews);
 
