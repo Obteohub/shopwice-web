@@ -274,6 +274,27 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                                             <p className="text-xs md:text-sm text-gray-600 pl-6 leading-relaxed font-medium" suppressHydrationWarning>
                                                 {boxContentText}
                                             </p>
+
+                                            {isRefurbished && (
+                                                <>
+                                                    <div className="my-3 border-t border-gray-200 border-dashed"></div>
+                                                    <h4 className="text-xs font-bold text-gray-800 mb-2 uppercase">Additional Info</h4>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4">
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                                                            <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                                            <span>Fresh in Box</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                                                            <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                            <span>12 Months Warranty</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                                                            <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                                            <span>100% Battery Health</span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -284,34 +305,7 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                                     <ProductLocationDisplay />
 
                                     {/* Refurb Perks Moved Here */}
-                                    {isRefurbished && (
-                                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 flex flex-col gap-2">
-                                            <div className="flex items-center gap-2 text-xs text-gray-700">
-                                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                                <span className="font-medium">12 months warranty</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-xs text-gray-700">
-                                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                                <span className="font-medium">100% Battery</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-xs text-gray-700">
-                                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                                <span className="font-medium">100% Battery</span>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-xs text-gray-700">
-                                                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-                                                </svg>
-                                                <span className="font-medium">100% Battery</span>
-                                            </div>
-                                        </div>
-                                    )}
+
                                 </div>
                             </div>
 
