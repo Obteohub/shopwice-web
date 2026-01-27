@@ -1406,3 +1406,40 @@ export const FETCH_PROMO_PRODUCT_QUERY = gql`
     }
   }
 `;
+
+export const GET_RECENT_REVIEWS_QUERY = gql`
+  query GetRecentReviews {
+    reviews(first: 50, where: { status: APPROVE }) {
+      nodes {
+        id
+        date
+        rating
+        content
+        author {
+          node {
+            name
+            avatar {
+              url
+            }
+          }
+        }
+        commentOn {
+          ... on Product {
+            id
+            name
+            slug
+            image {
+              sourceUrl
+            }
+            attributes {
+              nodes {
+                name
+                options
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;

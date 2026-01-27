@@ -18,7 +18,7 @@ import type {
 } from 'next';
 
 // GraphQL
-import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
+import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY, GET_RECENT_REVIEWS_QUERY } from '@/utils/gql/GQL_QUERIES';
 import { NextSeo, ProductJsonLd } from 'next-seo';
 
 /**
@@ -30,6 +30,7 @@ import { NextSeo, ProductJsonLd } from 'next-seo';
 const Produkt: NextPage = ({
   product,
   networkStatus,
+  recentRefurbishedReviews,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
   const hasError = networkStatus === 8;
@@ -119,7 +120,7 @@ const Produkt: NextPage = ({
 
       <Layout title={`${product?.name ? product.name : ''}`} fullWidth>
         {product ? (
-          <SingleProduct product={product} />
+          <SingleProduct product={product} recentRefurbishedReviews={recentRefurbishedReviews} />
         ) : (
           <div className="mt-8 text-2xl text-center">Loading product...</div>
         )}
@@ -151,12 +152,25 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       fetchPolicy: 'no-cache'
     });
 
+    // Fetch recent refurbished reviews
+    const reviewsData = await client.query({
+      query: GET_RECENT_REVIEWS_QUERY,
+      fetchPolicy: 'no-cache'
+    }).catch(err => {
+      console.error("Error fetching reviews:", err);
+      return { data: { reviews: { nodes: [] } } };
+    });
+
+    const recentRefurbishedReviews = reviewsData.data?.reviews?.nodes?.filter((review: any) =>
+      review.commentOn?.name?.toLowerCase().includes('refurbish')
+    ) || [];
+
     if (!data?.product) {
       return { notFound: true };
     }
 
     return {
-      props: { product: data.product, loading, networkStatus },
+      props: { product: data.product, loading, networkStatus, recentRefurbishedReviews },
       revalidate: 60, // Revalidate every 60 seconds
     };
   } catch (error) {
