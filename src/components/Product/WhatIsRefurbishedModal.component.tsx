@@ -65,7 +65,7 @@ const WhatIsRefurbishedModal = ({ isOpen, onClose }: WhatIsRefurbishedModalProps
     ];
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div
                 className="fixed inset-0"
                 onClick={onClose}
@@ -82,7 +82,7 @@ const WhatIsRefurbishedModal = ({ isOpen, onClose }: WhatIsRefurbishedModalProps
                 </button>
 
                 {/* Header */}
-                <div className="bg-gray-900 p-8 text-white relative overflow-hidden">
+                <div className="bg-blue-600 p-8 text-white relative overflow-hidden">
                     <div className="relative z-10">
                         <h3 className="text-2xl font-bold mb-2">Renewed & Refurbished Devices</h3>
                         <p className="text-gray-300 text-sm leading-relaxed">
@@ -90,7 +90,7 @@ const WhatIsRefurbishedModal = ({ isOpen, onClose }: WhatIsRefurbishedModalProps
                         </p>
                     </div>
                     {/* Decorative element */}
-                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-blue-600 opacity-20 rounded-full blur-2xl"></div>
+                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white opacity-20 rounded-full blur-2xl"></div>
                 </div>
 
                 {/* Content */}
