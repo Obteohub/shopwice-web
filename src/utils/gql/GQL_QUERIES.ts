@@ -1417,17 +1417,19 @@ export const GET_RECENT_REVIEWS_QUERY = gql`
         image {
           sourceUrl
         }
-        reviews(first: 3, where: { status: APPROVE }) {
-          nodes {
-            id
-            date
-            rating
-            content
-            author {
-              node {
-                name
-                avatar {
-                  url
+        ... on Product {
+          reviews(first: 3, where: { status: APPROVE }) {
+            nodes {
+              id
+              date
+              rating
+              content
+              author {
+                node {
+                  name
+                  avatar {
+                    url
+                  }
                 }
               }
             }
