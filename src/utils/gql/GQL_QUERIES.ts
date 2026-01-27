@@ -1422,9 +1422,6 @@ export const GET_RECENT_REVIEWS_QUERY = gql`
             nodes {
               id
               date
-              ... on Review {
-                 rating
-              }
               content
               author {
                 node {
