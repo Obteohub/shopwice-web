@@ -27,7 +27,7 @@ const ProductReviewsREST: React.FC<ProductReviewsRESTProps> = ({ productId }) =>
             try {
                 setLoading(true);
                 const response = await fetch(
-                    `https://api.shopwice.com/wp-json/wc/v3/products/reviews?product=${productId}&status=approved&per_page=100`,
+                    `https://api.shopwice.com/api/reviews?product_id=${productId}&per_page=100`,
                     {
                         headers: {
                             'Content-Type': 'application/json',

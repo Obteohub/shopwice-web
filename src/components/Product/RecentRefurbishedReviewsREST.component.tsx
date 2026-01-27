@@ -33,7 +33,7 @@ const RecentRefurbishedReviewsREST = () => {
                 setLoading(true);
                 // Fetch recent approved reviews - increased to 100 to catch more potential refurbished items
                 const reviewsResponse = await fetch(
-                    'https://api.shopwice.com/wp-json/wc/v3/products/reviews?status=approved&per_page=100',
+                    'https://api.shopwice.com/api/reviews?per_page=100',
                     {
                         headers: {
                             'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ const RecentRefurbishedReviewsREST = () => {
                 const productDetailsPromises = productIds.slice(0, 30).map(async (productId) => {
                     try {
                         const response = await fetch(
-                            `https://api.shopwice.com/wp-json/wc/v3/products/${productId}`,
+                            `https://api.shopwice.com/api/products/${productId}`,
                             {
                                 headers: {
                                     'Content-Type': 'application/json',
