@@ -92,7 +92,7 @@ const ProductLocationDisplay = () => {
                         onClick={() => window.dispatchEvent(new Event('open-location-picker'))}
                         className="text-xs text-blue-600 hover:underline ml-2 font-medium"
                     >
-                        Change
+                        Change Location
                     </button>
                 )}
                 {isDetecting && (

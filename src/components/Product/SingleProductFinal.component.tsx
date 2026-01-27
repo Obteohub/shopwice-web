@@ -262,6 +262,20 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                                             </button>
                                         </div>
                                     )}
+                                    {/* What's in the box Section */}
+                                    {boxContentText && (
+                                        <div className="my-3 p-3 bg-gray-50 rounded-lg border border-gray-100 shadow-sm">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m-8-4v10l8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                                </svg>
+                                                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">What's in the box?</span>
+                                            </div>
+                                            <p className="text-xs md:text-sm text-gray-600 pl-6 leading-relaxed font-medium" suppressHydrationWarning>
+                                                {boxContentText}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                                 {/* Information Stack - 30% */}
                                 <div className="md:col-span-3 flex flex-col gap-3">
@@ -427,20 +441,7 @@ const SingleProductFinal = ({ product }: IProductRootObject) => {
                                         })()}
                                     </div>
 
-                                    {/* What's in the box Section */}
-                                    {boxContentText && (
-                                        <div className="my-3 p-3 bg-gray-50 rounded-lg border border-gray-100 shadow-sm">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m-8-4v10l8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                                                </svg>
-                                                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">What's in the box?</span>
-                                            </div>
-                                            <p className="text-xs md:text-sm text-gray-600 pl-6 leading-relaxed font-medium" suppressHydrationWarning>
-                                                {boxContentText}
-                                            </p>
-                                        </div>
-                                    )}
+
 
                                     {/* Buttons */}
                                     <div className="flex flex-col gap-3 pt-2">

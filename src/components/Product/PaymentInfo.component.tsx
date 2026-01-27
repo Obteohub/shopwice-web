@@ -14,7 +14,7 @@ const PaymentInfo = () => {
                     </div>
                     <button
                         onClick={() => setIsPaymentModalOpen(true)}
-                        className="text-blue-600 text-xs font-semibold hover:underline focus:outline-none flex-shrink-0"
+                        className="text-gray-600 text-xs font-semibold hover:underline focus:outline-none flex-shrink-0"
                         aria-label="Learn more about payment"
                     >
                         Learn more

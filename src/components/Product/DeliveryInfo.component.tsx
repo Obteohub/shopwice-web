@@ -44,7 +44,7 @@ const DeliveryInfo = () => {
             ) {
                 text = (
                     <>
-                        <span className="text-[#27ae60]">Order it now and get it <strong>today</strong></span>
+                        <span className="text-gray-700">Order it now and get it <strong>today</strong></span>
                     </>
                 );
             }
@@ -56,7 +56,7 @@ const DeliveryInfo = () => {
             ) {
                 text = (
                     <>
-                        <span className="text-[#27ae60]">Order it now and get it in the <strong>next 3 hours</strong></span>
+                        <span className="text-gray-700">Order it now and get it in the <strong>next 3 hours</strong></span>
                     </>
                 );
                 showTimer = true;
@@ -66,7 +66,7 @@ const DeliveryInfo = () => {
             else {
                 text = (
                     <>
-                        <span className="text-[#e67e22]">Order it now and get it tomorrow</span>
+                        <span className="text-gray-700">Order it now and get it tomorrow</span>
                     </>
                 );
             }
@@ -133,7 +133,7 @@ const DeliveryInfo = () => {
                     </div>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="text-blue-600 text-xs font-semibold hover:underline focus:outline-none flex-shrink-0"
+                        className="text-gray-600 text-xs font-semibold underline hover:text-gray-800 focus:outline-none flex-shrink-0"
                         aria-label="Learn more about shipping"
                     >
                         Details
@@ -141,7 +141,7 @@ const DeliveryInfo = () => {
                 </div>
 
                 {deliveryData.showTimer && (
-                    <div className="text-[11px] text-[#d32f2f] mt-2 font-bold">
+                    <div className="text-[11px] text-gray-600 mt-2 font-bold">
                         Order within <span className="font-mono">{timeLeft}</span> for this window!
                     </div>
                 )}
