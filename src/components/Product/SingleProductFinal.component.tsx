@@ -72,9 +72,10 @@ const SingleProductFinal = ({ product }: { product: any }) => {
         (cat: any) => cat.name.toLowerCase() === 'mobile phones' || cat.slug === 'mobile-phones'
     );
 
+
     // A refurbished product has a "Condition" attribute set to "Refurbish"
     const conditionAttr = attributes?.nodes?.find(
-        (attr: any) => attr.name?.toLowerCase() === 'condition'
+        (attr: any) => attr.name?.toLowerCase().trim() === 'condition'
     );
     const isRefurbished = conditionAttr?.options?.some(
         (opt: any) => opt.toLowerCase().includes('refurbish')

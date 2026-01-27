@@ -84,7 +84,7 @@ const RecentRefurbishedReviewsREST = () => {
                             .filter((product: any) => {
                                 // A refurbished product has a "Condition" attribute set to "Refurbish"
                                 const conditionAttr = product.attributes?.nodes?.find(
-                                    (attr: any) => attr.name?.toLowerCase() === 'condition'
+                                    (attr: any) => attr.name?.toLowerCase().trim() === 'condition'
                                 );
                                 return conditionAttr?.options?.some(
                                     (opt: string) => opt.toLowerCase().includes('refurbish')
