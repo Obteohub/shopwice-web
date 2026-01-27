@@ -522,7 +522,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                 {productCategories?.nodes && productCategories.nodes.length > 0 && (
                                     <p>
                                         <span className="font-semibold text-gray-900">Categories: </span>
-                                        {productCategories.nodes.map((cat, index) => (
+                                        {productCategories.nodes.map((cat: any, index: number) => (
                                             <span key={cat.slug}>
                                                 {index > 0 && ', '}
                                                 <Link href={`/product-category/${cat.slug}`} className="text-blue-600 hover:underline">
