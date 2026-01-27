@@ -69,12 +69,12 @@ const SingleProductFinal = ({ product }: { product: any }) => {
     // Check if product is in "Mobile Phones" category
     // Logic updated to remove Category restriction for badges as per user request
     const isMobilePhone = productCategories?.nodes?.some(
-        (cat) => cat.name.toLowerCase() === 'mobile phones' || cat.slug === 'mobile-phones'
+        (cat: any) => cat.name.toLowerCase() === 'mobile phones' || cat.slug === 'mobile-phones'
     );
 
     // Check if product has ANY attribute with an option containing "Refurbish" or name contains it
     const isRefurbished = attributes?.nodes?.some(
-        (attr) => attr.options?.some((opt) => opt.toLowerCase().includes('refurbish'))
+        (attr: any) => attr.options?.some((opt: any) => opt.toLowerCase().includes('refurbish'))
     ) || name.toLowerCase().includes('refurbish');
 
     // Determine Box Content
@@ -105,7 +105,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
     };
 
     const selectedVariationNode = product.variations?.nodes.find(
-        (node) => node.databaseId === selectedVariation,
+        (node: any) => node.databaseId === selectedVariation,
     );
 
     const currentStockQuantity = selectedVariationNode
@@ -184,7 +184,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                         {productCategories?.nodes && productCategories.nodes.length > 0 && (
                                             <p>
                                                 <span className="font-semibold text-gray-900">Categories: </span>
-                                                {productCategories.nodes.map((cat, index) => (
+                                                {productCategories.nodes.map((cat: any, index: number) => (
                                                     <span key={cat.slug}>
                                                         {index > 0 && ', '}
                                                         <Link href={`/product-category/${cat.slug}`} className="text-blue-600 hover:underline">
@@ -379,7 +379,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                             </label>
                                             <div className="flex flex-wrap gap-2">
                                                 {product.variations.nodes.map(
-                                                    ({ id, name, databaseId, stockQuantity, stockStatus }) => {
+                                                    ({ id, name, databaseId, stockQuantity, stockStatus }: any) => {
                                                         const isOutOfStock = stockStatus === 'OUT_OF_STOCK' || (stockQuantity !== null && stockQuantity === 0);
                                                         const isSelected = selectedVariation === databaseId;
                                                         const variantName = name.split('- ').pop();
@@ -545,7 +545,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                         <div>
                             <h3 className="text-xl font-bold mb-4 text-gray-900">Mostly Bought Together</h3>
                             <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
-                                {product.crossSell.nodes.map((crossSellProduct) => (
+                                {product.crossSell.nodes.map((crossSellProduct: any) => (
                                     <div key={crossSellProduct.id} className="min-w-[160px] md:min-w-[220px] snap-start">
                                         <ProductCard
                                             {...crossSellProduct}
@@ -564,7 +564,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                         <div>
                             <h3 className="text-xl font-bold mb-4 text-gray-900">You May Also Like</h3>
                             <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
-                                {product.upsell.nodes.map((upsellProduct) => (
+                                {product.upsell.nodes.map((upsellProduct: any) => (
                                     <div key={upsellProduct.id} className="min-w-[160px] md:min-w-[220px] snap-start">
                                         <ProductCard
                                             {...upsellProduct}
@@ -584,7 +584,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                         <div>
                             <h3 className="text-xl font-bold mb-4 text-gray-900">Related Products</h3>
                             <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
-                                {product.related.nodes.map((relatedProduct) => (
+                                {product.related.nodes.map((relatedProduct: any) => (
                                     <div key={relatedProduct.id} className="min-w-[160px] md:min-w-[220px] snap-start">
                                         <ProductCard
                                             {...relatedProduct}
