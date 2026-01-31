@@ -57,35 +57,102 @@ function getErrorMessage(error: any): string {
 
 export async function login(username: string, password: string) {
   try {
-    const client = new ApolloClient({
-      uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
-      cache: new InMemoryCache(),
-      // credentials: 'include', // Not strictly needed for JWT but harmless
+    const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
     });
 
-    const { data } = await client.mutate({
-      mutation: LOGIN_USER,
-      variables: { username, password },
-    });
+    const result = await response.json();
 
-    const loginResult = data.login;
+    if (!response.ok) {
+      throw new Error(result.message || 'Login failed');
+    }
 
-    if (loginResult && loginResult.authToken) {
-      // Store Auth Token
+    if (result.success && result.data?.authToken) {
+      // Store Auth Data
       if (typeof window !== 'undefined') {
         localStorage.setItem('auth-data', JSON.stringify({
-          authToken: loginResult.authToken,
-          refreshToken: loginResult.refreshToken,
-          user: loginResult.user
+          authToken: result.data.authToken,
+          refreshToken: result.data.refreshToken,
+          user: result.data.user
         }));
       }
       return { success: true, status: 'SUCCESS' };
     } else {
-      throw new Error('Login failed. No token received.');
+      throw new Error(result.message || 'Login failed. No token received.');
     }
   } catch (error: any) {
     const userFriendlyMessage = getErrorMessage(error);
     throw new Error(userFriendlyMessage);
+  }
+}
+
+export async function googleLogin(token: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Google login failed');
+    }
+
+    if (result.success && result.data?.authToken) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth-data', JSON.stringify({
+          authToken: result.data.authToken,
+          refreshToken: result.data.refreshToken,
+          user: result.data.user
+        }));
+      }
+      return { success: true, status: 'SUCCESS' };
+    } else {
+      throw new Error(result.message || 'Google login failed. No token received.');
+    }
+  } catch (error: any) {
+    throw new Error(error.message || 'An error occurred during Google login.');
+  }
+}
+
+export async function facebookLogin(accessToken: string) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/auth/facebook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ accessToken }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Facebook login failed');
+    }
+
+    if (result.success && result.data?.authToken) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth-data', JSON.stringify({
+          authToken: result.data.authToken,
+          refreshToken: result.data.refreshToken,
+          user: result.data.user
+        }));
+      }
+      return { success: true, status: 'SUCCESS' };
+    } else {
+      throw new Error(result.message || 'Facebook login failed. No token received.');
+    }
+  } catch (error: any) {
+    throw new Error(error.message || 'An error occurred during Facebook login.');
   }
 }
 

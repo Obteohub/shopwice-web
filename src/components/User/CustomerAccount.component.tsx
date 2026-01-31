@@ -32,7 +32,7 @@ const CustomerAccount = () => {
     );
   };
   const { loading, error, data } = useQuery(GET_CUSTOMER_DASHBOARD_DATA, {
-    fetchPolicy: 'network-only'
+    fetchPolicy: 'cache-and-network'
   });
 
   // Handle Loading State

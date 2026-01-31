@@ -4,6 +4,7 @@ import { useProductFilters } from '@/hooks/useProductFilters';
 import { usePagination } from '@/hooks/usePagination';
 import ProductCard from './ProductCard.component';
 import ProductFilters from './ProductFilters.component';
+import { useCollectionData } from '@/hooks/useCollectionData';
 
 interface ProductListProps {
   products: Product[];
@@ -31,6 +32,7 @@ const ProductList = ({
 }: ProductListProps) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const { data: collectionData } = useCollectionData();
 
   // Pagination hook
   const {
@@ -102,6 +104,7 @@ const ProductList = ({
             toggleProductType={toggleProductType}
             products={allProducts}
             resetFilters={resetFilters}
+            options={collectionData || undefined}
           />
         </div>
       </aside>
@@ -231,6 +234,7 @@ const ProductList = ({
                   toggleProductType={toggleProductType}
                   products={allProducts}
                   resetFilters={resetFilters}
+                  options={collectionData || undefined}
                 />
               </div>
             </div>

@@ -23,13 +23,9 @@ interface IBillingProps {
   initialCity?: string | null;
 }
 
-import { useQuery } from '@apollo/client';
-import { GET_ALLOWED_COUNTRIES } from '@/utils/gql/GQL_QUERIES';
-
 const CountrySelect = ({ label, name, customValidation }: { label: string, name: string, customValidation: any }) => {
   const { register } = useFormContext();
-  const { data } = useQuery(GET_ALLOWED_COUNTRIES);
-  const allowedCountries = data?.wooCommerce?.countries || [];
+  const allowedCountries = [{ code: 'GH', name: 'Ghana' }];
 
   return (
     <div className="w-full">
@@ -41,13 +37,9 @@ const CountrySelect = ({ label, name, customValidation }: { label: string, name:
         {...register(name, customValidation)}
         className="bg-white border border-gray-300 text-gray-900 text-sm rounded focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5"
       >
-        {allowedCountries.length > 0 ? (
-          allowedCountries.map((c: any) => (
-            <option key={c.code} value={c.code}>{c.name}</option>
-          ))
-        ) : (
-          <option value="GH">Ghana (Default)</option>
-        )}
+        {allowedCountries.map((c: any) => (
+          <option key={c.code} value={c.code}>{c.name}</option>
+        ))}
       </select>
     </div>
   );

@@ -1,5 +1,4 @@
-
-// Imports
+// Imports - Layout Refined
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -29,9 +28,18 @@ const ComparePriceModal = dynamic(() => import('./ComparePriceModal.component'),
 const WhatIsRefurbishedModal = dynamic(() => import('./WhatIsRefurbishedModal.component'), { ssr: false });
 
 import QuantityControl from '@/components/Cart/QuantityControl.component';
-import RecentRefurbishedReviewsREST from './RecentRefurbishedReviewsREST.component';
 
-const SingleProductFinal = ({ product }: { product: any }) => {
+const SingleProductFinal = ({
+    product,
+    loading = false,
+    isMobilePhone = false,
+    isRefurbished = false
+}: {
+    product: any;
+    loading?: boolean;
+    isMobilePhone?: boolean;
+    isRefurbished?: boolean;
+}) => {
     const [selectedVariation, setSelectedVariation] = useState<number>();
     const [quantity, setQuantity] = useState<number>(1);
     const [isShortDescriptionExpanded, setIsShortDescriptionExpanded] = useState(false);
@@ -51,9 +59,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
     let { description, shortDescription, image, name, onSale, price, regularPrice, salePrice, productCategories, productBrand, averageRating, reviewCount, galleryImages, reviews, attributes, sku, stockStatus, stockQuantity, totalSales } =
         product;
 
-    useEffect(() => {
-        console.log('Product Data:', product);
-    }, [product]);
+
 
     // Add padding/empty character after currency symbol here
     if (price) {
@@ -66,40 +72,26 @@ const SingleProductFinal = ({ product }: { product: any }) => {
         salePrice = paddedPrice(salePrice, 'GH₵');
     }
 
-    // Check if product is in "Mobile Phones" category
-    // Logic updated to remove Category restriction for badges as per user request
-    const isMobilePhone = productCategories?.nodes?.some(
-        (cat: any) => cat.name.toLowerCase() === 'mobile phones' || cat.slug === 'mobile-phones'
-    );
-
-    useEffect(() => {
-        console.log('CLIENT ATTRIBUTES DEBUG:', attributes?.nodes);
-    }, [attributes]);
-
-
-    // A refurbished product has a "Condition" attribute set to "Refurbish"
-    // Using loose check to match ProductCard logic matches "all refurbish information" request
-    const isRefurbished = attributes?.nodes?.some(
-        (attr: any) => attr.options?.some((opt: any) => opt.toLowerCase().includes('refurbish'))
-    );
-
-
     // Determine Box Content
     const boxContentAttr = attributes?.nodes?.find((attr: any) =>
-        ['what\'s in the box', 'box content', 'in the box', 'package contains'].includes((attr.name || '').toLowerCase())
+        ['what\'s in the box', 'box content', 'in the box', 'package contains'].includes(
+            (attr.name || '').toLowerCase()
+        )
     );
 
     let boxContentText: string | null = null;
     if (boxContentAttr && boxContentAttr.options) {
-        boxContentText = boxContentAttr.options.join(', ');
+        boxContentText = Array.isArray(boxContentAttr.options)
+            ? boxContentAttr.options.join(', ')
+            : String(boxContentAttr.options);
     } else if (isRefurbished) {
         boxContentText = isMobilePhone
             ? "Device, Charging Cable, User Manual, SIM Ejector Tool "
             : "Device, Compatible Essential Accessories (Generic Box)";
     }
 
-    const showRefurbishedBadge = isRefurbished;
-    const showWarrantyBadge = isRefurbished;
+    const showRefurbishedBadge = !!isRefurbished;
+    const showWarrantyBadge = !!isRefurbished;
 
     const scrollToReviews = () => {
         reviewsRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -130,28 +122,28 @@ const SingleProductFinal = ({ product }: { product: any }) => {
     const currentFormattedStockStatus = currentStockStatus?.replace(/_/g, ' ').toLowerCase();
 
     return (
-        <section className="bg-white pb-12 md:pb-16">
-            <div className="w-full max-w-[1440px] mx-auto px-4 md:px-6 py-4 md:py-8 text-black">
+        <section className="bg-white pb-8">
+            <div className="w-full max-w-none mx-auto px-2 md:px-4 pt-1 pb-4 text-black">
 
                 {/* Row 1: Breadcrumbs */}
-                <div className="mb-4 md:mb-6">
+                <div className="mb-2 md:mb-3">
                     <Breadcrumbs categories={productCategories} productName={name} />
                 </div>
 
                 {/* Row 2: Main Grid (Gallery Left / Details Right) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-14">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 lg:gap-8">
 
-                    {/* Left Column: Gallery & Images - lg:col-span-5 */}
-                    <div className="lg:col-span-5 w-full flex flex-col gap-8">
-                        <div className="relative group rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
+                    {/* Left Column: Gallery & Images - lg:col-span-3 (30%) */}
+                    <div className="lg:col-span-3 w-full flex flex-col gap-8">
+                        <div className="relative group overflow-hidden bg-gray-50">
                             <ProductGallery key="vertical-gallery" mainImage={image} galleryImages={galleryImages} />
                             <div className="absolute bottom-4 right-4 z-[50]">
                                 <ProductActions productName={name} productUrl={`/product/${product.slug}`} productId={product.databaseId} orientation="col" />
                             </div>
                         </div>
 
-                        {/* Accordions (Desktop Placement - mimicking standard layout) */}
-                        <div className="hidden lg:block space-y-6">
+                        {/* Accordions (Desktop Placement) */}
+                        <div className="hidden lg:block space-y-4">
                             {description && (
                                 <Accordion title="Product Details" defaultOpen={true}>
                                     <div className="prose prose-sm max-w-none text-gray-600 leading-relaxed" dangerouslySetInnerHTML={{ __html: description }} />
@@ -207,14 +199,13 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                         </div>
                     </div>
 
-                    {/* Right Column: Details & Actions - lg:col-span-7 */}
                     <div className="lg:col-span-7 w-full">
-                        <div className="sticky top-24 flex flex-col gap-6">
+                        <div className="sticky top-24 flex flex-col gap-4">
                             {/* Header Info */}
                             <div className="flex flex-col gap-2" suppressHydrationWarning>
                                 <div className="flex justify-start items-center gap-4">
                                     {productBrand?.nodes?.[0] && (
-                                        <Link href={`/brand/${productBrand.nodes[0].slug}`} className="text-sm font-bold text-blue-600 uppercase tracking-wider hover:underline">
+                                        <Link href={`/brand/${productBrand.nodes[0].slug}`} className="text-xs font-bold text-blue-600 font-medium tracking-wider hover:underline">
                                             {productBrand.nodes[0].name}
                                         </Link>
                                     )}
@@ -222,19 +213,19 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                         className="flex items-center gap-1 cursor-pointer hover:opacity-75 transition-opacity"
                                         onClick={scrollToReviews}
                                     >
-                                        <StarRating rating={averageRating || 0} size={15} />
-                                        <span className="text-xs text-gray-500 font-medium ml-1">
+                                        <StarRating rating={averageRating || 0} size={14} />
+                                        <span className="text-xs text-gray-500 font-normal ml-1">
                                             {reviewCount || 0} Reviews
                                         </span>
                                     </div>
                                 </div>
 
-                                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                                <h1 className="text-md md:text-xl font-bold text-gray-900 leading-tight">
                                     {name}
                                 </h1>
 
-                                {showRefurbishedBadge && (
-                                    <div className="flex items-center gap-2 mt-1">
+                                {showRefurbishedBadge ? (
+                                    <div className="flex items-center gap-2 mt-2" suppressHydrationWarning>
                                         <div className="inline-flex items-center gap-1.5 bg-green-50 px-2.5 py-1 rounded-full border border-green-100">
                                             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                                             <p className="text-xs text-green-700 font-bold uppercase tracking-wide">Refurbished - Excellent</p>
@@ -246,11 +237,11 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                             learn more?
                                         </button>
                                     </div>
-                                )}
+                                ) : <div className="mt-4 h-6"></div>}
                             </div>
 
                             {/* Info Grid: Short Description (70%) and Info/Refurb Perks (30%) */}
-                            <div className="grid grid-cols-1 md:grid-cols-10 gap-6 my-2">
+                            <div className="grid grid-cols-1 md:grid-cols-10 gap-4 my-1">
                                 {/* Short Description - 70% */}
                                 <div className="md:col-span-7">
                                     {shortDescription && (
@@ -305,47 +296,50 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                         </div>
                                     )}
                                 </div>
-                                {/* Information Stack - 30% */}
-                                <div className="md:col-span-3 flex flex-col gap-3">
-                                    <DeliveryInfo />
-                                    <PaymentInfo />
-                                    <ProductLocationDisplay />
-
-                                    {/* Refurb Perks Moved Here */}
-
+                                {/* Unified Trust & Logistics Section */}
+                                <div className="md:col-span-3">
+                                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-2">
+                                        <ProductLocationDisplay />
+                                        <div className="border-t border-gray-100 pt-2">
+                                            <DeliveryInfo />
+                                        </div>
+                                        <div className="border-t border-gray-100 pt-2">
+                                            <PaymentInfo />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Action Card */}
-                            <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-5 shadow-sm">
-                                <div className="flex flex-col gap-5">
+                            <div className="bg-white border border-gray-200 rounded-xl p-3 md:p-4 shadow-sm">
+                                <div className="flex flex-col gap-3">
                                     {/* Price Section */}
                                     <div>
                                         {onSale ? (
                                             <div className="flex flex-col items-start gap-1">
                                                 <div className="flex flex-row items-end gap-3">
-                                                    <div className="flex flex-col">
+                                                    <div className="flex flex-col" suppressHydrationWarning>
                                                         {isRefurbished && (
                                                             <span className="text-[10px] uppercase font-extrabold text-blue-700 mb-0.5">Refurbished Price</span>
                                                         )}
-                                                        <p className="text-3xl font-bold text-blue-600 leading-none" suppressHydrationWarning>
+                                                        <p className="text-3xl font-bold text-blue-600 leading-none">
                                                             {product.variations
                                                                 ? price
                                                                 : salePrice}
                                                         </p>
                                                     </div>
-                                                    <div className="flex flex-col pb-0.5">
+                                                    <div className="flex flex-col pb-0.5" suppressHydrationWarning>
                                                         {isRefurbished && (
                                                             <span className="text-[10px] uppercase font-extrabold text-gray-400 mb-0.5">Brand New Price</span>
                                                         )}
-                                                        <p className="text-xl text-gray-400 line-through leading-none" suppressHydrationWarning>
+                                                        <p className="text-xl text-gray-400 line-through leading-none">
                                                             {regularPrice}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 {(() => {
-                                                    const currentSale = product.variations ? filteredVariantPrice(price, '') : salePrice;
-                                                    const currentReg = product.variations ? filteredVariantPrice(price, 'right') : regularPrice;
+                                                    const currentSale = (product.variations ? filteredVariantPrice(price, '') : salePrice) || '';
+                                                    const currentReg = (product.variations ? filteredVariantPrice(price, 'right') : regularPrice) || '';
 
                                                     if (currentSale && currentReg) {
                                                         const saleVal = parseFloat(currentSale.replace(/[^0-9.]/g, ''));
@@ -478,8 +472,6 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                                         )}
                                     </div>
 
-                                    {/* Global Refurbished Reviews */}
-                                    {isRefurbished && <RecentRefurbishedReviewsREST />}
                                 </div>
                             </div>
                         </div>
@@ -546,7 +538,7 @@ const SingleProductFinal = ({ product }: { product: any }) => {
 
 
                 {/* Row 4: Related Products Sliders */}
-                <div className="mt-16 pt-10 border-t border-gray-100 space-y-12">
+                <div className="mt-8 pt-6 border-t border-gray-100 space-y-6">
                     {/* Moved CrossSell to top */}
                     {product.crossSell?.nodes && product.crossSell.nodes.length > 0 && (
                         <div>
@@ -624,12 +616,12 @@ const SingleProductFinal = ({ product }: { product: any }) => {
                     </div>
                 )}
                 {(() => {
-                    const currentSale = product.variations ? filteredVariantPrice(price, '') : salePrice;
-                    const currentReg = product.variations ? filteredVariantPrice(price, 'right') : regularPrice;
-                    const saleVal = parseFloat((currentSale || '').replace(/[^0-9.]/g, ''));
-                    const regVal = parseFloat((currentReg || '').replace(/[^0-9.]/g, ''));
+                    const currentSale = (product.variations ? filteredVariantPrice(price, '') : salePrice) || '';
+                    const currentReg = (product.variations ? filteredVariantPrice(price, 'right') : regularPrice) || '';
+                    const saleVal = parseFloat(currentSale.replace(/[^0-9.]/g, ''));
+                    const regVal = parseFloat(currentReg.replace(/[^0-9.]/g, ''));
                     const savings = regVal - saleVal;
-                    const savingsFormatted = savings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    const savingsFormatted = isNaN(savings) ? '0.00' : savings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                     return (
                         <>

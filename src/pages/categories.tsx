@@ -10,25 +10,35 @@ import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
 /**
  * Category page displays all of the categories
  */
-const Kategorier: NextPage = ({
+const categories: NextPage = ({
   categories,
 }: InferGetStaticPropsType<typeof getStaticProps>) => (
-  <Layout title="Kategorier">
+  <Layout title="categories">
     {categories && <Categories categories={categories} />}
   </Layout>
 );
 
-export default Kategorier;
+export default categories;
 
 export const getStaticProps: GetStaticProps = async () => {
-  const result = await client.query({
-    query: FETCH_ALL_CATEGORIES_QUERY,
-  });
+  try {
+    const result = await client.query({
+      query: FETCH_ALL_CATEGORIES_QUERY,
+    });
 
-  return {
-    props: {
-      categories: result.data.productCategories.nodes,
-    },
-    revalidate: 10,
-  };
+    return {
+      props: {
+        categories: result.data?.productCategories?.nodes || [],
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return {
+      props: {
+        categories: [],
+      },
+      revalidate: 10,
+    };
+  }
 };

@@ -1407,6 +1407,103 @@ export const FETCH_PROMO_PRODUCT_QUERY = gql`
   }
 `;
 
+export const PRODUCT_CARD_FIELDS_FRAGMENT = gql`
+  fragment ProductCardFields on Product {
+    databaseId
+    name
+    slug
+    averageRating
+    reviewCount
+    onSale
+    image {
+      sourceUrl
+    }
+    ... on SimpleProduct {
+      price
+      regularPrice
+      salePrice
+      stockQuantity
+      productCategories {
+        nodes {
+          name
+          slug
+        }
+      }
+      attributes {
+        nodes {
+          name
+          options
+        }
+      }
+    }
+    ... on VariableProduct {
+      price
+      regularPrice
+      salePrice
+      stockQuantity
+      productCategories {
+        nodes {
+          name
+          slug
+        }
+      }
+      attributes {
+        nodes {
+          name
+          options
+        }
+      }
+    }
+    ... on ExternalProduct {
+      price
+    }
+  }
+`;
+
+export const FETCH_HOME_PAGE_DATA = gql`
+  query FetchHomePageData($promoProductSlug: ID!) {
+    topRatedProducts: products(first: 12, where: { orderby: { field: RATING, order: DESC } }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    bestSellingProducts: products(first: 12, where: { orderby: { field: TOTAL_SALES, order: DESC } }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    airConditionerProducts: products(first: 12, where: { category: "air-conditioners" }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    mobilePhonesOnSale: products(first: 12, where: { category: "mobile-phones", onSale: true }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    laptopsProducts: products(first: 12, where: { category: "laptops" }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    speakersProducts: products(first: 12, where: { category: "speakers" }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    televisionsProducts: products(first: 12, where: { category: "televisions" }) {
+      nodes {
+        ...ProductCardFields
+      }
+    }
+    promoProduct: product(id: $promoProductSlug, idType: SLUG) {
+      ...ProductCardFields
+    }
+  }
+  ${PRODUCT_CARD_FIELDS_FRAGMENT}
+`;
+
 export const GET_RECENT_REVIEWS_QUERY = gql`
   query GetRecentReviews {
     products(first: 10, where: { search: "Refurbished" }) {

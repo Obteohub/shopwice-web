@@ -153,6 +153,7 @@ const AddToCart = ({
     clientMutationId: uuidv4(), // Generate a unique id.
     productId,
     quantity,
+    variationId: variationId || undefined,
   };
 
   // Get cart data query
@@ -162,12 +163,17 @@ const AddToCart = ({
 
   useEffect(() => {
     if (data) {
+      console.log("AddToCart: New Cart Data received", data);
       const updatedCart = getFormattedCart(data);
+      console.log("AddToCart: Formatted Cart", updatedCart);
       if (updatedCart) {
         syncWithWooCommerce(updatedCart);
+        console.log("AddToCart: Synced with Store");
       }
     }
   }, [data, syncWithWooCommerce]);
+
+  console.log('AddToCart Input:', productQueryInput);
 
   // Add to cart mutation
   const [addToCart, { loading: addToCartLoading, data: addToCartData, error: addToCartError }] = useMutation(ADD_TO_CART, {

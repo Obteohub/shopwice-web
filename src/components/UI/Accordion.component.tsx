@@ -25,24 +25,26 @@ const Accordion: React.FC<AccordionProps> = ({
     }, [isOpen]);
 
     useEffect(() => {
-        // Update height when open state changes
-        if (isOpen && contentRef.current) {
-            setContentHeight(`${contentRef.current.scrollHeight}px`);
-        } else {
+        if (!isOpen) {
             setContentHeight('0px');
+            return;
         }
-    }, [isOpen, hasBeenOpened]);
 
-    useEffect(() => {
-        // Handle resizing responsiveness
-        const handleResize = () => {
-            if (isOpen && contentRef.current) {
+        const updateHeight = () => {
+            if (contentRef.current) {
                 setContentHeight(`${contentRef.current.scrollHeight}px`);
             }
         };
 
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        // Initial height when opening
+        updateHeight();
+
+        const resizeObserver = new ResizeObserver(updateHeight);
+        if (contentRef.current) {
+            resizeObserver.observe(contentRef.current);
+        }
+
+        return () => resizeObserver.disconnect();
     }, [isOpen]);
 
     return (

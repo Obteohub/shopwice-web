@@ -69,7 +69,7 @@ const ProductLocationDisplay = () => {
     };
 
     return (
-        <div className="py-1 mb-1">
+        <div>
             <div className="flex items-center gap-2 mb-1">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 text-gray-500">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -82,7 +82,7 @@ const ProductLocationDisplay = () => {
                 {(!hasMounted || !selectedLocation) && !isDetecting && (
                     <button
                         onClick={handleDetectLocation}
-                        className="text-xs text-blue-600 hover:underline ml-2 font-medium"
+                        className="text-xs text-gray-600 hover:underline ml-2 font-medium"
                     >
                         Auto-detect
                     </button>
@@ -90,13 +90,13 @@ const ProductLocationDisplay = () => {
                 {hasMounted && selectedLocation && !isDetecting && (
                     <button
                         onClick={() => window.dispatchEvent(new Event('open-location-picker'))}
-                        className="text-xs text-blue-600 hover:underline ml-2 font-medium"
+                        className="text-xs text-gray-600 underline ml-2 font-medium"
                     >
-                        Change Location
+                        change location
                     </button>
                 )}
                 {isDetecting && (
-                    <span className="text-xs text-gray-400 ml-2 animate-pulse">Detecting...</span>
+                    <span className="text-xs text-gray-400 ml-2 animate-pulse">detecting...</span>
                 )}
             </div>
             {geoError && (

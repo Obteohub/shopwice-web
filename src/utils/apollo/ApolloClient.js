@@ -27,6 +27,11 @@ export const middleware = new ApolloLink(async (operation, forward) => {
 
   const headers = {};
 
+  // Middleware Log
+  if (operation.operationName === 'addToCart' || operation.operationName === 'GET_CART') {
+    console.log(`[Apollo Middleware] Op: ${operation.operationName}, Session in Storage:`, sessionData);
+  }
+
   // Add Session Header (Skip for Registration to prevent Nonce/Session conflicts)
   if (sessionData && sessionData.token && sessionData.createdTime && operation.operationName !== 'CreateUser') {
     const { token, createdTime } = sessionData;
@@ -61,11 +66,13 @@ export const afterware = new ApolloLink((operation, forward) =>
      * Check for session header and update session in local storage accordingly.
      */
     const context = operation.getContext();
-    const {
-      response: { headers },
-    } = context;
+    const responseHeaders = context?.response?.headers;
 
-    const session = headers.get('woocommerce-session');
+    const session = responseHeaders ? (responseHeaders.get('woocommerce-session') || responseHeaders.get('x-woocommerce-session')) : null;
+
+    if (operation.operationName === 'addToCart' || operation.operationName === 'GET_CART') {
+      console.log(`[Apollo Afterware] Op: ${operation.operationName}, Session Header:`, session);
+    }
 
     if (session && typeof window !== 'undefined') {
       if ('false' === session) {
@@ -94,9 +101,9 @@ const client = new ApolloClient({
     afterware.concat(
       createHttpLink({
         // Use proxy on client to avoid CORS, absolute URL on server
-        uri: typeof window === 'undefined' ? 'https://api.shopwice.com/graphql' : '/graphql',
+        uri: typeof window === 'undefined' ? process.env.NEXT_PUBLIC_GRAPHQL_URL : '/graphql',
         fetch,
-        credentials: 'omit',
+        credentials: 'include',
       }),
     ),
   ),

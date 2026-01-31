@@ -7,6 +7,9 @@ import { Inter } from 'next/font/google';
 
 import client from '@/utils/apollo/ApolloClient';
 import CartInitializer from '@/components/Cart/CartInitializer.component';
+import ReviewsInitializer from '@/components/Product/ReviewsInitializer.component';
+import GlobalInitializer from '@/components/GlobalInitializer.component';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Types
 import type { AppProps } from 'next/app';
@@ -32,25 +35,29 @@ const inter = Inter({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ApolloProvider client={client}>
-      <DefaultSeo
-        titleTemplate="%s | Shopwice"
-        defaultTitle="Shopwice"
-        openGraph={{
-          type: 'website',
-          locale: 'en_GB',
-          url: 'https://shopwice.com/',
-          siteName: 'Shopwice',
-        }}
-        twitter={{
-          handle: '@shopwice',
-          site: '@shopwice',
-          cardType: 'summary_large_image',
-        }}
-      />
-      <CartInitializer />
-      <main className={`${inter.variable} font-sans`}>
-        <Component {...pageProps} />
-      </main>
+      <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
+        <DefaultSeo
+          titleTemplate="%s | Shopwice"
+          defaultTitle="Shopwice"
+          openGraph={{
+            type: 'website',
+            locale: 'en_GB',
+            url: 'https://shopwice.com/',
+            siteName: 'Shopwice',
+          }}
+          twitter={{
+            handle: '@shopwice',
+            site: '@shopwice',
+            cardType: 'summary_large_image',
+          }}
+        />
+        <CartInitializer />
+        <ReviewsInitializer />
+        <GlobalInitializer />
+        <main className={`${inter.variable} font-sans`}>
+          <Component {...pageProps} />
+        </main>
+      </GoogleOAuthProvider>
     </ApolloProvider>
   );
 }

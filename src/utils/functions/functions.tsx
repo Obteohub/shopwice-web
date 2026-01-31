@@ -207,66 +207,52 @@ export const getFormattedCart = (data: IFormattedCartProps) => {
     totalProductsPrice: 0,
   };
 
-  if (!data) {
-    return;
+  if (!data || !data.cart || !data.cart.contents) {
+    return formattedCart;
   }
   const givenProducts = data.cart.contents.nodes;
 
   // Create an empty object.
   formattedCart.products = [];
 
-  const product: Product = {
-    productId: 0,
-    cartKey: '',
-    name: '',
-    qty: 0,
-    price: 0,
-    totalPrice: '0',
-    image: { sourceUrl: '', srcSet: '', title: '' },
-  };
-
   let totalProductsCount = 0;
-  let i = 0;
 
   if (!givenProducts.length) {
     return;
   }
 
-  givenProducts.forEach(() => {
-    const givenProduct = givenProducts[Number(i)].product.node;
+  givenProducts.forEach((item) => {
+    console.log(`[getFormattedCart] Processing item key: ${item.key}`);
+    const givenProduct = item.product?.node;
+    if (!givenProduct) {
+      console.warn(`[getFormattedCart] Item ${item.key} skipped: No product node.`, item);
+      return;
+    }
 
     // Convert price to a float value
-    const convertedCurrency = givenProducts[Number(i)].total.replace(
+    const convertedCurrency = item.total.replace(
       /[^0-9.-]+/g,
       '',
     );
 
-    product.productId = givenProduct.productId;
-    product.cartKey = givenProducts[Number(i)].key;
-    product.name = givenProduct.name;
-    product.qty = givenProducts[Number(i)].quantity;
-    product.price = Number(convertedCurrency) / product.qty;
-    product.totalPrice = givenProducts[Number(i)].total;
-
-    // Ensure we can add products without images to the cart
-
-    product.image = givenProduct.image.sourceUrl
-      ? {
-        sourceUrl: givenProduct.image.sourceUrl,
-        srcSet: givenProduct.image.srcSet,
-        title: givenProduct.image.title,
+    const product: Product = {
+      productId: givenProduct.databaseId,
+      cartKey: item.key,
+      name: givenProduct.name,
+      qty: item.quantity,
+      price: Number(convertedCurrency) / item.quantity,
+      totalPrice: item.total,
+      image: {
+        sourceUrl: givenProduct.image?.sourceUrl || process.env.NEXT_PUBLIC_PLACEHOLDER_SMALL_IMAGE_URL,
+        srcSet: givenProduct.image?.srcSet || process.env.NEXT_PUBLIC_PLACEHOLDER_SMALL_IMAGE_URL,
+        title: givenProduct.image?.title || givenProduct.name,
       }
-      : {
-        sourceUrl: process.env.NEXT_PUBLIC_PLACEHOLDER_SMALL_IMAGE_URL,
-        srcSet: process.env.NEXT_PUBLIC_PLACEHOLDER_SMALL_IMAGE_URL,
-        title: givenProduct.name,
-      };
+    };
 
-    totalProductsCount += givenProducts[Number(i)].quantity;
+    totalProductsCount += item.quantity;
 
     // Push each item into the products array.
     formattedCart.products.push(product);
-    i++;
   });
   formattedCart.totalProductsCount = totalProductsCount;
   formattedCart.totalProductsPrice = data.cart.total;

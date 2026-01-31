@@ -25,6 +25,13 @@ interface ProductFiltersProps {
   toggleProductType: (id: string) => void;
   products: Product[];
   resetFilters: () => void;
+  options?: {
+    brands?: string[];
+    locations?: string[];
+    categories?: string[];
+    attributes?: Array<{ name: string; options: string[] }>;
+    price_range?: { min: number; max: number };
+  };
 }
 
 const ProductFilters = ({
@@ -46,56 +53,57 @@ const ProductFilters = ({
   toggleProductType,
   products,
   resetFilters,
+  options,
 }: ProductFiltersProps) => {
   // Get all unique attributes and their options
-  const attributesMap = new Map<string, Set<string>>();
+  const derivedAttributesMap = new Map<string, Set<string>>();
 
   products.forEach((product) => {
     product.attributes?.nodes?.forEach((attr) => {
-      if (!attributesMap.has(attr.name)) {
-        attributesMap.set(attr.name, new Set());
+      if (!attr.name) return; // Skip attributes without a name
+      if (!derivedAttributesMap.has(attr.name)) {
+        derivedAttributesMap.set(attr.name, new Set());
       }
       attr.options?.forEach((option) => {
-        attributesMap.get(attr.name)!.add(option);
+        if (option) derivedAttributesMap.get(attr.name)!.add(option);
       });
     });
   });
 
-  // Convert to sorted arrays
-  const attributes = Array.from(attributesMap.entries()).map(([name, optionsSet]) => ({
+  const attributes = (options?.attributes || Array.from(derivedAttributesMap.entries()).map(([name, optionsSet]) => ({
     name,
-    options: Array.from(optionsSet).sort((a, b) => a.localeCompare(b)),
-  }));
+    options: Array.from(optionsSet).sort((a, b) => (a || '').localeCompare(b || '')),
+  }))).filter(attr => attr?.name && Array.isArray(attr?.options) && attr.options.length > 0);
 
-  // Get unique brands from all products
-  const brands = Array.from(
+  // Get unique brands
+  const brands = options?.brands || Array.from(
     new Set(
       products.flatMap(
         (product: Product) =>
           product.productBrand?.nodes?.map((node) => node.name) || [],
       ),
     ),
-  ).sort((a, b) => a.localeCompare(b));
+  ).sort((a, b) => (a || '').localeCompare(b || ''));
 
-  // Get unique locations from all products
-  const locations = Array.from(
+  // Get unique locations
+  const locations = options?.locations || Array.from(
     new Set(
       products.flatMap(
         (product: Product) =>
           product.productLocation?.nodes?.map((node) => node.name) || [],
       ),
     ),
-  ).sort((a, b) => a.localeCompare(b));
+  ).sort((a, b) => (a || '').localeCompare(b || ''));
 
-  // Get unique categories from all products
-  const categories = Array.from(
+  // Get unique categories
+  const categories = options?.categories || Array.from(
     new Set(
       products.flatMap(
         (product: Product) =>
           product.productCategories?.nodes?.map((cat) => cat.name) || [],
       ),
     ),
-  ).sort((a, b) => a.localeCompare(b));
+  ).sort((a, b) => (a || '').localeCompare(b || ''));
 
   const toggleBrand = (brand: string) => {
     setSelectedBrands((prev) =>
@@ -178,6 +186,8 @@ const ProductFilters = ({
 
         {/* Dynamic Attributes */}
         {attributes.map((attribute) => {
+          if (!attribute || !attribute.name) return null;
+
           const cleanName = (attribute.name.startsWith('pa_')
             ? attribute.name.replace('pa_', '')
             : attribute.name);

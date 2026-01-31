@@ -1,7 +1,6 @@
 /*eslint complexity: ["error", 20]*/
 // Imports
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, ApolloError } from '@apollo/client';
 import { v4 as uuidv4 } from 'uuid';
 
 // Components
@@ -10,9 +9,6 @@ import CheckoutOrderReview from './CheckoutOrderReview.component';
 import LoadingSpinner from '../LoadingSpinner/LoadingSpinner.component';
 import Button from '../UI/Button.component';
 
-// GraphQL
-import { GET_CART, GET_PAYMENT_GATEWAYS, GET_ALLOWED_COUNTRIES } from '@/utils/gql/GQL_QUERIES';
-import { CHECKOUT_MUTATION, UPDATE_CUSTOMER, UPDATE_SHIPPING_METHOD } from '@/utils/gql/GQL_MUTATIONS';
 import { useCartStore } from '@/stores/cartStore';
 import { useLocationStore } from '@/stores/locationStore';
 
@@ -54,183 +50,265 @@ export interface ICheckoutData {
 }
 
 const CheckoutForm = () => {
-  const { cart, clearWooCommerceSession, syncWithWooCommerce } = useCartStore();
+  const { cart: storeCart, clearWooCommerceSession, syncWithWooCommerce } = useCartStore();
   const [orderData, setOrderData] = useState<ICheckoutData | null>(null);
-  const [requestError, setRequestError] = useState<ApolloError | null>(null);
+  const [requestError, setRequestError] = useState<any>(null);
   const [orderCompleted, setOrderCompleted] = useState<boolean>(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isUpdatingCustomer, setIsUpdatingCustomer] = useState<boolean>(false);
+  const [isUpdatingShipping, setIsUpdatingShipping] = useState<boolean>(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<boolean>(false);
 
-  // Get Payment Gateways
-  const { data: gatewaysData } = useQuery(GET_PAYMENT_GATEWAYS);
-  const availableGateways = gatewaysData?.paymentGateways?.nodes || [];
-
-  // Set default payment method
-  useEffect(() => {
-    if (availableGateways.length > 0 && !selectedPaymentMethod) {
-      // Filter out disabled ones if API doesn't already, but typically nodes are enabled ones
-      setSelectedPaymentMethod(availableGateways[0].id);
-    }
-  }, [availableGateways, selectedPaymentMethod]);
+  const [availableGateways, setAvailableGateways] = useState<any[]>([]);
+  const [cartData, setCartData] = useState<any>(null);
 
   // Checkout Steps: 1: Address, 2: Shipping, 3: Payment
   const [step, setStep] = useState<number>(1);
   const [selectedShippingRate, setSelectedShippingRate] = useState<string>('');
 
-  // Get cart data query
-  const { data, refetch } = useQuery(GET_CART, {
-    notifyOnNetworkStatusChange: true,
-  });
+  const fetchCheckoutState = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/checkout/state`, {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setCartData(data);
+        // Sync with store if it has the expected structure
+        // If data follows Store API format, we might need a converter.
+        // For now, let's keep it in local cartData for rendering.
+      }
+    } catch (error) {
+      console.error('Error fetching checkout state:', error);
+    }
+  };
 
-  useEffect(() => {
-    if (data) {
-      const updatedCart = getFormattedCart(data);
-      // Only update if we actually got a cart back. 
-      // Do NOT clear session here, as it cleans itself up elsewhere or persists.
-      // Clearing it causes reload issues.
-      if (updatedCart) {
-        syncWithWooCommerce(updatedCart);
+  const fetchGateways = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/payment-gateways`, {
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setAvailableGateways(data);
+        if (data.length > 0 && !selectedPaymentMethod) {
+          setSelectedPaymentMethod(data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching payment gateways:', error);
+    }
+  };
+
+  const getAuthHeaders = () => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (typeof window !== 'undefined') {
+      const authData = JSON.parse(localStorage.getItem('auth-data') || 'null');
+      if (authData?.authToken) {
+        headers['Authorization'] = `Bearer ${authData.authToken}`;
       }
     }
-  }, [data, syncWithWooCommerce]);
-
-  // Mutations
-  const [updateCustomer, { loading: isUpdatingCustomer, data: updateCustomerData }] = useMutation(UPDATE_CUSTOMER, {
-    onError: (error) => {
-      setRequestError(error);
-    }
-  });
+    return headers;
+  };
 
   useEffect(() => {
-    if (updateCustomerData) {
-      refetch();
-      setStep(2);
-    }
-  }, [updateCustomerData, refetch]);
-
-  const [updateShippingMethod, { loading: isUpdatingShipping }] = useMutation(UPDATE_SHIPPING_METHOD, {
-    onCompleted: () => {
-      refetch();
-      setStep(3);
-    },
-    onError: (error) => {
-      setRequestError(error);
-    }
-  });
-
-  const [checkout, { loading: checkoutLoading, error: checkoutError, data: checkoutData }] = useMutation(CHECKOUT_MUTATION);
-
-  useEffect(() => {
-    if (checkoutData) {
-      // Order success
-      // router.push('/order-received'); 
-      // Logic handled in component or redirect
-      const result = checkoutData?.checkout;
-      if (result?.redirect) {
-        window.location.href = result.redirect;
-        return; // Stop further execution if redirecting
-      }
-      clearWooCommerceSession();
-      setOrderCompleted(true);
-      refetch();
-    }
-  }, [checkoutData, clearWooCommerceSession, refetch]);
-
-  useEffect(() => {
-    if (checkoutError) {
-      setRequestError(checkoutError); // Pass the full ApolloError object
-    }
-  }, [checkoutError]);
-
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
-
-  // Get Allowed Countries
-  const { data: countriesData } = useQuery(GET_ALLOWED_COUNTRIES);
-  const allowedCountries = countriesData?.wooCommerce?.countries || [];
-  const defaultCountry = allowedCountries.length > 0 ? allowedCountries[0].code : 'GH';
+    fetchCheckoutState();
+    fetchGateways();
+  }, []);
 
   // Step 1 Handler: Address Submission
-  const handleAddressSubmit = (submitData: ICheckoutDataProps) => {
-    const checkOutData = createCheckoutData(submitData);
-    setOrderData(checkOutData);
+  const handleAddressSubmit = async (submitData: ICheckoutDataProps) => {
+    setIsUpdatingCustomer(true);
     setRequestError(null);
 
-    // Update Customer in WooCommerce to trigger shipping calculation
-    updateCustomer({
-      variables: {
-        input: {
-          clientMutationId: uuidv4(),
-          shipping: {
-            firstName: submitData.firstName,
-            lastName: submitData.lastName,
-            address1: submitData.address1,
-            address2: submitData.address2,
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/checkout/cart/update-customer`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          shipping_address: {
+            first_name: submitData.firstName,
+            last_name: submitData.lastName,
+            address_1: submitData.address1,
+            address_2: submitData.address2,
             city: submitData.city,
             postcode: submitData.postcode || '00000',
-            country: submitData.country || defaultCountry,
+            country: submitData.country || 'GH',
           },
-          billing: {
-            firstName: submitData.firstName,
-            lastName: submitData.lastName,
-            address1: submitData.address1,
-            address2: submitData.address2,
+          billing_address: {
+            first_name: submitData.firstName,
+            last_name: submitData.lastName,
+            address_1: submitData.address1,
+            address_2: submitData.address2,
             city: submitData.city,
             postcode: submitData.postcode || '00000',
-            country: submitData.country || defaultCountry,
+            country: submitData.country || 'GH',
             email: submitData.email,
             phone: submitData.phone,
           }
-        }
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update address');
       }
-    });
+
+      setCartData(data); // Middleware returns updated cart state
+      setOrderData(submitData as any); // Save for final checkout
+      setStep(2);
+    } catch (error: any) {
+      setRequestError(error);
+    } finally {
+      setIsUpdatingCustomer(false);
+    }
   };
 
   // Step 2 Handler: Shipping Selection
-  const handleShippingSubmit = () => {
-    if (!selectedShippingRate) {
-      // Show error or alert?
-      return;
+  const handleShippingSubmit = async () => {
+    if (!selectedShippingRate) return;
+
+    setIsUpdatingShipping(true);
+    try {
+      // Standard WooCommerce Store API expects this to update the cart
+      // The middleware might have a specific path or we just use general cart update
+      // Given the list, if no specific select rate endpoint, we might pass it to checkout
+      // OR try the standard Store API path /api/checkout/cart/select-shipping-rate
+      const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/checkout/cart/select-shipping-rate`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          rate_id: selectedShippingRate
+        })
+      });
+
+      const data = await response.json();
+      setCartData(data);
+      setStep(3);
+    } catch (error: any) {
+      setRequestError(error);
+    } finally {
+      setIsUpdatingShipping(false);
     }
-    updateShippingMethod({
-      variables: {
-        input: {
-          clientMutationId: uuidv4(),
-          shippingMethods: [selectedShippingRate]
-        }
-      }
-    });
   };
 
   // Step 3 Handler: Final Order Placement
-  const handlePaymentSubmit = () => {
-    // Ensure we have orderData
-    if (orderData && selectedPaymentMethod) {
-      const finalOrderData = {
-        ...orderData,
-        paymentMethod: selectedPaymentMethod,
-      };
-      checkout({
-        variables: {
-          input: finalOrderData
-        }
+  const handlePaymentSubmit = async () => {
+    if (!selectedPaymentMethod) return;
+
+    setCheckoutLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_REST_API_URL}/checkout`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          payment_method: selectedPaymentMethod,
+          billing_address: cartData.billing_address,
+          shipping_address: cartData.shipping_address,
+          // Add any extra data required by middleware
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Checkout failed');
+      }
+
+      if (data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+
+      clearWooCommerceSession();
+      setOrderCompleted(true);
+    } catch (error: any) {
+      setRequestError(error);
+    } finally {
+      setCheckoutLoading(false);
     }
   };
 
-  const availableShippingMethods = data?.cart?.availableShippingMethods?.[0]?.rates || [];
+  // Get Allowed Countries - Static for now or we could fetch from /api/checkout/fields
+  const allowedCountries = [{ code: 'GH', name: 'Ghana' }];
+  const defaultCountry = 'GH';
+
+
+  const availableShippingMethods = cartData?.shipping_rates?.[0]?.shipping_rates?.map((rate: any) => ({
+    id: rate.rate_id,
+    label: rate.name,
+    cost: (parseInt(rate.price) / 100).toFixed(2),
+    company: rate.method_id
+  })) || [];
+
+  // Transform REST cart data for OrderReview component
+  const transformedCart = cartData ? {
+    contents: {
+      nodes: cartData.items?.map((item: any) => ({
+        key: item.key,
+        product: {
+          node: {
+            name: item.name,
+            image: { sourceUrl: item.images?.[0]?.src },
+            stockStatus: 'IN_STOCK'
+          }
+        },
+        variation: item.variation && item.variation.length > 0 ? {
+          node: {
+            name: item.name,
+            image: { sourceUrl: item.images?.[0]?.src },
+            attributes: {
+              nodes: item.variation.map((v: any) => ({ name: v.attribute, value: v.value }))
+            }
+          }
+        } : null,
+        quantity: item.quantity?.value,
+        subtotal: `₵${(parseInt(item.totals?.line_subtotal) / 100).toFixed(2)}`,
+        total: `₵${(parseInt(item.totals?.line_total) / 100).toFixed(2)}`
+      }))
+    },
+    subtotal: `₵${(parseInt(cartData.totals?.total_items) / 100).toFixed(2)}`,
+    total: `₵${(parseInt(cartData.totals?.total_price) / 100).toFixed(2)}`,
+    shippingTotal: `₵${(parseInt(cartData.totals?.total_shipping) / 100).toFixed(2)}`
+  } : null;
 
   // Get Location from Store
   const { selectedLocation } = useLocationStore();
 
   return (
     <>
-      {cart && !orderCompleted ? (
+      {storeCart && !orderCompleted ? (
         <div className="w-full px-0 lg:px-2 py-1">
-          {/* ... (rest of the layout) */}
+          {requestError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative mb-4 text-xs animate-shake">
+              <strong className="font-bold">Error: </strong>
+              <span className="block sm:inline">{requestError.message || "An unexpected error occurred. Please try again."}</span>
+            </div>
+          )}
+
           <div className="flex flex-col-reverse lg:flex-row gap-2">
             <div className="flex-grow lg:w-2/3">
-              {/* ... (Steps Indicator and Error Display) */}
+              {/* Steps Indicator */}
+              <div className="flex items-center justify-between mb-4 bg-white p-2 rounded border border-gray-100 shadow-sm">
+                <div className={`flex items-center gap-2 ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>1</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Address</span>
+                </div>
+                <div className="h-px bg-gray-200 flex-grow mx-4"></div>
+                <div className={`flex items-center gap-2 ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>2</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Shipping</span>
+                </div>
+                <div className="h-px bg-gray-200 flex-grow mx-4"></div>
+                <div className={`flex items-center gap-2 ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${step >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}>3</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">Payment</span>
+                </div>
+              </div>
 
               {/* Step 1: Address */}
               {step === 1 && (
@@ -376,7 +454,7 @@ const CheckoutForm = () => {
             {/* Right Column: Summary (Sticky) */}
             <div className="lg:w-1/3">
               <div className="sticky top-16">
-                <CheckoutOrderReview cart={data?.cart} />
+                <CheckoutOrderReview cart={transformedCart} />
 
                 {/* Trust Badges - Ultra Compact */}
                 <div className="mt-2 grid grid-cols-2 gap-2">
@@ -396,7 +474,7 @@ const CheckoutForm = () => {
         </div>
       ) : (
         <>
-          {!cart && !orderCompleted && (
+          {!storeCart && !orderCompleted && (
             <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
               <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
                 <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

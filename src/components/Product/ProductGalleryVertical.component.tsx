@@ -1,4 +1,4 @@
-
+// Gallery - Sharp Corners
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 
@@ -65,7 +65,7 @@ const ProductGalleryVertical: React.FC<ProductGalleryProps> = ({ mainImage, gall
                             key={`thumb-${index}`}
                             onMouseEnter={() => scrollToImage(index)}
                             onClick={() => scrollToImage(index)}
-                            className={`relative w-full aspect-square cursor-pointer rounded-md overflow-hidden border-2 transition-all duration-200 ${activeIndex === index ? 'border-blue-600 ring-1 ring-blue-600' : 'border-gray-200 hover:border-gray-300'
+                            className={`relative w-full aspect-square cursor-pointer overflow-hidden transition-all duration-200 ${activeIndex === index ? 'ring-2 ring-blue-600 ring-inset opacity-100' : 'opacity-50 hover:opacity-100'
                                 }`}
                         >
                             <Image
@@ -84,7 +84,7 @@ const ProductGalleryVertical: React.FC<ProductGalleryProps> = ({ mainImage, gall
             <div className="relative flex-1 w-full">
                 <div
                     ref={scrollContainerRef}
-                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide aspect-square md:h-[400px] lg:h-[500px] md:aspect-auto bg-gray-100 rounded-lg"
+                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide aspect-square md:h-[400px] lg:h-[500px] md:aspect-auto bg-gray-100"
                     onScroll={handleScroll}
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >

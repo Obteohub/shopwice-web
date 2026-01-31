@@ -5831,14 +5831,14 @@ import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
 /**
  * Category page displays all of the categories
  */
-const Kategorier: NextPage = ({
+const categories: NextPage = ({
   categories,
 }: InferGetStaticPropsType<typeof getStaticProps>) => (
-  <Layout title="Kategorier">
+  <Layout title="categories">
     {categories && <Categories categories={categories} />}
   </Layout>
 );
-export default Kategorier;
+export default categories;
 export const getStaticProps: GetStaticProps = async () => {
   const result = await client.query({
     query: FETCH_ALL_CATEGORIES_QUERY,
@@ -6412,22 +6412,22 @@ test.describe('Categories Navigation', () => {
   });
   test('should navigate through category pages', async ({ page }) => {
     // Navigate to categories page
-    await page.getByRole('link', { name: 'Kategorier' }).click();
-    await expect(page).toHaveURL('http://localhost:3000/kategorier');
+    await page.getByRole('link', { name: 'categories' }).click();
+    await expect(page).toHaveURL('http://localhost:3000/categories');
     // Click a category and verify navigation
     await page.getByRole('link', { name: 'Clothing' }).click();
     await expect(page).toHaveURL(/^http:\/\/localhost:3000\/kategori\/clothing/);
     // Go back to categories
-    await page.getByRole('link', { name: 'Kategorier' }).click();
-    await expect(page).toHaveURL('http://localhost:3000/kategorier');
+    await page.getByRole('link', { name: 'categories' }).click();
+    await expect(page).toHaveURL('http://localhost:3000/categories');
     // Try another category
     await page.getByRole('link', { name: 'Tshirts' }).click();
     await expect(page).toHaveURL(/^http:\/\/localhost:3000\/kategori\/tshirts/);
   });
   test('should navigate between categories and home', async ({ page }) => {
     // Go to categories
-    await page.getByRole('link', { name: 'Kategorier' }).click();
-    await expect(page).toHaveURL('http://localhost:3000/kategorier');
+    await page.getByRole('link', { name: 'categories' }).click();
+    await expect(page).toHaveURL('http://localhost:3000/categories');
     // Go back home
     await page.getByRole('link', { name: 'NETTBUTIKK' }).click();
     await expect(page).toHaveURL('http://localhost:3000/');
@@ -21245,11 +21245,11 @@ import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QU
 import { NextSeo, ProductJsonLd } from 'next-seo';
 /**
  * Display a single product with dynamic pretty urls
- * @function Produkt
+ * @function product
  * @param {InferGetStaticPropsType<typeof getStaticProps>} products
  * @returns {JSX.Element} - Rendered component
  */
-const Produkt: NextPage = ({
+const product: NextPage = ({
   product,
   networkStatus,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
@@ -21346,7 +21346,7 @@ const Produkt: NextPage = ({
     </>
   );
 };
-export default withRouter(Produkt);
+export default withRouter(product);
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [],

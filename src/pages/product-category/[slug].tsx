@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GetStaticProps, GetStaticPaths } from 'next';
+import { GetServerSideProps } from 'next';
 import Layout from '@/components/Layout/Layout.component';
 import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
@@ -48,17 +48,16 @@ const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps)
 
 export default CategoryPage;
 
-export const getStaticPaths: GetStaticPaths = async () => {
-    return {
-        paths: [],
-        fallback: 'blocking',
-    };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
     const slug = params?.slug as string;
 
     try {
+        // Cache control
+        res.setHeader(
+            'Cache-Control',
+            'public, s-maxage=60, stale-while-revalidate=59'
+        );
+
         const { data } = await client.query({
             query: GET_CATEGORY_DATA_BY_SLUG,
             variables: { slug, id: slug },
@@ -75,7 +74,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
                 pageInfo: data.products.pageInfo,
                 slug,
             },
-            revalidate: 60,
         };
     } catch (error) {
         console.error('Error fetching category data:', error);

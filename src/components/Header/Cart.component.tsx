@@ -16,6 +16,7 @@ const Cart = ({ stickyNav }: ICartProps) => {
   const [productCount, setProductCount] = useState<number | null | undefined>();
 
   useEffect(() => {
+    console.log("Cart Component: Store Cart Updated:", cart);
     if (cart) {
       setProductCount(cart.totalProductsCount);
     } else {

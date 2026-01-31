@@ -1,4 +1,4 @@
-
+// Breadcrumbs - Refined
 import React from 'react';
 import Link from 'next/link';
 
@@ -36,7 +36,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ categories, productName }) =>
 
     return (
         <nav className="text-sm text-gray-500 mb-4 overflow-x-auto whitespace-nowrap scrollbar-hide">
-            <ul className="flex items-center space-x-2">
+            <ul className="flex items-center space-x-1">
                 <li>
                     <Link href="/" className="hover:text-black transition-colors">
                         Home

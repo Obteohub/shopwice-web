@@ -126,22 +126,22 @@ const DeliveryInfo = () => {
                 }
             `}</style>
 
-            <div className={`py-1 mb-1 ${deliveryData.isActive ? 'accra-delivery-active' : ''}`}>
+            <div className={`${deliveryData.isActive ? 'accra-delivery-active' : ''}`}>
                 <div className="flex items-start gap-1">
                     <div className="text-xs text-gray-600 leading-relaxed">
-                        <strong>Greater Accra:</strong> {deliveryData.text}
+                        Greater Accra: {deliveryData.text}
                     </div>
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="text-gray-600 text-xs font-semibold underline hover:text-gray-800 focus:outline-none flex-shrink-0"
                         aria-label="Learn more about shipping"
                     >
-                        Details
+                        details
                     </button>
                 </div>
 
                 {deliveryData.showTimer && (
-                    <div className="text-[11px] text-gray-600 mt-2 font-bold">
+                    <div className="text-[10px] text-gray-500 mt-1 font-bold">
                         Order within <span className="font-mono">{timeLeft}</span> for this window!
                     </div>
                 )}

@@ -1,4 +1,4 @@
-// Imports
+// Imports - Updated Layout
 import { withRouter } from 'next/router';
 import { useRouter } from 'next/router';
 
@@ -12,9 +12,8 @@ import client from '@/utils/apollo/ApolloClient';
 // Types
 import type {
   NextPage,
-  GetStaticProps,
-  GetStaticPaths,
-  InferGetStaticPropsType,
+  GetServerSideProps,
+  InferGetServerSidePropsType,
 } from 'next';
 
 // GraphQL
@@ -23,26 +22,19 @@ import { NextSeo, ProductJsonLd } from 'next-seo';
 
 /**
  * Display a single product with dynamic pretty urls
- * @function Produkt
- * @param {InferGetStaticPropsType<typeof getStaticProps>} products
+ * @function product
+ * @param {InferGetServerSidePropsType<typeof getServerSideProps>} products
  * @returns {JSX.Element} - Rendered component
  */
-const Produkt: NextPage = ({
+const product: NextPage = ({
   product,
+  loading,
   networkStatus,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  isMobilePhone,
+  isRefurbished
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const router = useRouter();
   const hasError = networkStatus === 8;
-
-  // Handle fallback state
-  if (router.isFallback) {
-    return (
-      <Layout title="Loading..." fullWidth>
-        <div className="mt-8 text-2xl text-center">Loading...</div>
-      </Layout>
-    );
-  }
-
   // --- SEO Preparation ---
   // Safely extract data
   const name = product?.name || 'Product';
@@ -119,7 +111,12 @@ const Produkt: NextPage = ({
 
       <Layout title={`${product?.name ? product.name : ''}`} fullWidth>
         {product ? (
-          <SingleProduct product={product} />
+          <SingleProduct
+            product={product}
+            loading={loading}
+            isMobilePhone={isMobilePhone}
+            isRefurbished={isRefurbished}
+          />
         ) : (
           <div className="mt-8 text-2xl text-center">Loading product...</div>
         )}
@@ -133,17 +130,16 @@ const Produkt: NextPage = ({
   );
 };
 
-export default withRouter(Produkt);
+export default withRouter(product);
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: 'blocking',
-  };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
   try {
+    // Cache control for Server Side Rendering (s-maxage=60, stale-while-revalidate=59)
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=59'
+    );
+
     console.log('Fetching product for slug:', params?.slug);
     const { data, loading, networkStatus } = await client.query({
       query: GET_SINGLE_PRODUCT,
@@ -151,13 +147,38 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       fetchPolicy: 'no-cache'
     });
 
-    if (!data?.product) {
+    const product = data.product;
+
+    if (!product) {
       return { notFound: true };
     }
 
+    // Server-side calculation for stability
+    const isMobilePhone = product.productCategories?.nodes?.some(
+      (cat: any) =>
+        (cat.name && cat.name.toLowerCase() === 'mobile phones') ||
+        (cat.slug && cat.slug === 'mobile-phones')
+    ) || false;
+
+    // Permissive check for refurbished status
+    const isRefurbished = product.attributes?.nodes?.some((attr: any) =>
+      attr.options?.some((opt: any) =>
+        String(opt).toLowerCase().includes('refurbish')
+      )
+    ) || false;
+
+    console.log(`[SSR] Product: ${product.name}`);
+    console.log(`[SSR] Attributes:`, JSON.stringify(product.attributes?.nodes || [], null, 2));
+    console.log(`[SSR] isMobilePhone: ${isMobilePhone}, isRefurbished: ${isRefurbished}`);
+
     return {
-      props: { product: data.product, loading, networkStatus },
-      revalidate: 60, // Revalidate every 60 seconds
+      props: {
+        product,
+        loading,
+        networkStatus,
+        isMobilePhone,
+        isRefurbished
+      },
     };
   } catch (error) {
     console.error(error);

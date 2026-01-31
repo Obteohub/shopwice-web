@@ -27,17 +27,9 @@ import client from '@/utils/apollo/ApolloClient';
 import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
 
 // GraphQL
-import {
-  FETCH_ALL_PRODUCTS_QUERY,
-  FETCH_TOP_RATED_PRODUCTS_QUERY,
-  FETCH_BEST_SELLING_PRODUCTS_QUERY,
-  FETCH_AIR_CONDITIONER_PRODUCTS_QUERY,
-  FETCH_MOBILE_PHONES_ON_SALE_QUERY,
-  FETCH_LAPTOPS_QUERY,
-  FETCH_SPEAKERS_QUERY,
-  FETCH_TELEVISIONS_QUERY,
-  FETCH_PROMO_PRODUCT_QUERY
-} from '@/utils/gql/GQL_QUERIES';
+import { FETCH_HOME_PAGE_DATA } from '@/utils/gql/GQL_QUERIES';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useEffect } from 'react';
 
 /**
  * Main index page
@@ -55,81 +47,84 @@ const Index: NextPage = ({
   speakersProducts,
   televisionsProducts,
   promoProduct,
-}: InferGetStaticPropsType<typeof getStaticProps>) => (
-  <Layout title="Shop Online In Ghana | Shopwice" fullWidth={true}>
-    <div className="bg-[#F8F8F8]">
-      <Hero />
-      <FeaturedCategories />
-      <TopRatedProducts products={topRatedProducts} />
-      <AirConditionerProducts products={airConditionerProducts} />
-      <MobilePhonesOnSale products={mobilePhonesOnSale} />
-      <LaptopsProducts products={laptopsProducts} />
-      <SpeakersProducts products={speakersProducts} />
-      <TelevisionsProducts products={televisionsProducts} />
-      <WhyChooseUs />
-      <PromoBoxes promoProduct={promoProduct} />
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const setHomeData = useGlobalStore((state) => state.setHomeData);
 
-      <BestSellingSlider products={bestSellingProducts} />
+  useEffect(() => {
+    setHomeData({
+      topRatedProducts,
+      bestSellingProducts,
+      airConditionerProducts,
+      mobilePhonesOnSale,
+      laptopsProducts,
+      speakersProducts,
+      televisionsProducts,
+      promoProduct
+    });
+  }, [topRatedProducts, bestSellingProducts, airConditionerProducts, mobilePhonesOnSale, laptopsProducts, speakersProducts, televisionsProducts, promoProduct, setHomeData]);
 
-      <InfoBanner />
+  return (
+    <Layout title="Shop Online In Ghana | Shopwice" fullWidth={true}>
+      <div className="bg-[#F8F8F8]">
+        <Hero />
+        <FeaturedCategories />
+        <TopRatedProducts products={topRatedProducts} />
+        <AirConditionerProducts products={airConditionerProducts} />
+        <MobilePhonesOnSale products={mobilePhonesOnSale} />
+        <LaptopsProducts products={laptopsProducts} />
+        <SpeakersProducts products={speakersProducts} />
+        <TelevisionsProducts products={televisionsProducts} />
+        <WhyChooseUs />
+        <PromoBoxes promoProduct={promoProduct} />
 
-      <SEOContent />
+        <BestSellingSlider products={bestSellingProducts} />
 
-      <Newsletter />
-    </div>
-  </Layout>
-);
+        <InfoBanner />
+
+        <SEOContent />
+
+        <Newsletter />
+      </div>
+    </Layout>
+  );
+};
 
 export default Index;
 
 export const getStaticProps: GetStaticProps = async () => {
-  /* Removed unused products query */
-  /* const { data: productsData } = await client.query({ query: FETCH_ALL_PRODUCTS_QUERY }); */
+  try {
+    const { data } = await client.query({
+      query: FETCH_HOME_PAGE_DATA,
+      variables: { promoProductSlug: "microsoft-xbox-x-wireless-controller" }
+    });
 
-  const { data: topRatedData } = await client.query({
-    query: FETCH_TOP_RATED_PRODUCTS_QUERY,
-  });
-
-  const { data: bestSellingData } = await client.query({
-    query: FETCH_BEST_SELLING_PRODUCTS_QUERY,
-  });
-
-  const { data: airConditionerData } = await client.query({
-    query: FETCH_AIR_CONDITIONER_PRODUCTS_QUERY,
-  });
-
-  const { data: mobilePhonesData } = await client.query({
-    query: FETCH_MOBILE_PHONES_ON_SALE_QUERY,
-  });
-
-  const { data: laptopsData } = await client.query({
-    query: FETCH_LAPTOPS_QUERY,
-  });
-
-  const { data: speakersData } = await client.query({
-    query: FETCH_SPEAKERS_QUERY,
-  });
-
-  const { data: televisionsData } = await client.query({
-    query: FETCH_TELEVISIONS_QUERY,
-  });
-
-  const { data: promoProductData } = await client.query({
-    query: FETCH_PROMO_PRODUCT_QUERY,
-    variables: { slug: "microsoft-xbox-x-wireless-controller" }
-  });
-
-  return {
-    props: {
-      topRatedProducts: topRatedData?.products?.nodes || [],
-      bestSellingProducts: bestSellingData?.products?.nodes || [],
-      airConditionerProducts: airConditionerData?.products?.nodes || [],
-      mobilePhonesOnSale: mobilePhonesData?.products?.nodes || [],
-      laptopsProducts: laptopsData?.products?.nodes || [],
-      speakersProducts: speakersData?.products?.nodes || [],
-      televisionsProducts: televisionsData?.products?.nodes || [],
-      promoProduct: promoProductData?.product || null,
-    },
-    revalidate: 60,
-  };
+    return {
+      props: {
+        topRatedProducts: data?.topRatedProducts?.nodes || [],
+        bestSellingProducts: data?.bestSellingProducts?.nodes || [],
+        airConditionerProducts: data?.airConditionerProducts?.nodes || [],
+        mobilePhonesOnSale: data?.mobilePhonesOnSale?.nodes || [],
+        laptopsProducts: data?.laptopsProducts?.nodes || [],
+        speakersProducts: data?.speakersProducts?.nodes || [],
+        televisionsProducts: data?.televisionsProducts?.nodes || [],
+        promoProduct: data?.promoProduct || null,
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return {
+      props: {
+        topRatedProducts: [],
+        bestSellingProducts: [],
+        airConditionerProducts: [],
+        mobilePhonesOnSale: [],
+        laptopsProducts: [],
+        speakersProducts: [],
+        televisionsProducts: [],
+        promoProduct: null,
+      },
+      revalidate: 10,
+    };
+  }
 };
