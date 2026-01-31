@@ -39,29 +39,44 @@ import { useEffect } from 'react';
  */
 
 const Index: NextPage = ({
-  topRatedProducts,
-  bestSellingProducts,
-  airConditionerProducts,
-  mobilePhonesOnSale,
-  laptopsProducts,
-  speakersProducts,
-  televisionsProducts,
-  promoProduct,
+  topRatedProducts: initialTopRated,
+  bestSellingProducts: initialBestSelling,
+  airConditionerProducts: initialAir,
+  mobilePhonesOnSale: initialMobile,
+  laptopsProducts: initialLaptops,
+  speakersProducts: initialSpeakers,
+  televisionsProducts: initialTelevisions,
+  promoProduct: initialPromo,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const setHomeData = useGlobalStore((state) => state.setHomeData);
+  const homeData = useGlobalStore((state) => state.homeData);
+
+  // If props are empty (build error), fallback to cached data from store
+  const topRatedProducts = initialTopRated?.length > 0 ? initialTopRated : (homeData.topRatedProducts || []);
+  const bestSellingProducts = initialBestSelling?.length > 0 ? initialBestSelling : (homeData.bestSellingProducts || []);
+  const airConditionerProducts = initialAir?.length > 0 ? initialAir : (homeData.airConditionerProducts || []);
+  const mobilePhonesOnSale = initialMobile?.length > 0 ? initialMobile : (homeData.mobilePhonesOnSale || []);
+  const laptopsProducts = initialLaptops?.length > 0 ? initialLaptops : (homeData.laptopsProducts || []);
+  const speakersProducts = initialSpeakers?.length > 0 ? initialSpeakers : (homeData.speakersProducts || []);
+  const televisionsProducts = initialTelevisions?.length > 0 ? initialTelevisions : (homeData.televisionsProducts || []);
+  const promoProduct = initialPromo || homeData.promoProduct;
+
+  console.log('[Index] initialTopRated:', initialTopRated?.length, initialTopRated?.[0]);
 
   useEffect(() => {
-    setHomeData({
-      topRatedProducts,
-      bestSellingProducts,
-      airConditionerProducts,
-      mobilePhonesOnSale,
-      laptopsProducts,
-      speakersProducts,
-      televisionsProducts,
-      promoProduct
-    });
-  }, [topRatedProducts, bestSellingProducts, airConditionerProducts, mobilePhonesOnSale, laptopsProducts, speakersProducts, televisionsProducts, promoProduct, setHomeData]);
+    if (initialTopRated?.length > 0) {
+      setHomeData({
+        topRatedProducts: initialTopRated,
+        bestSellingProducts: initialBestSelling,
+        airConditionerProducts: initialAir,
+        mobilePhonesOnSale: initialMobile,
+        laptopsProducts: initialLaptops,
+        speakersProducts: initialSpeakers,
+        televisionsProducts: initialTelevisions,
+        promoProduct: initialPromo
+      });
+    }
+  }, [initialTopRated, initialBestSelling, initialAir, initialMobile, initialLaptops, initialSpeakers, initialTelevisions, initialPromo, setHomeData]);
 
   return (
     <Layout title="Shop Online In Ghana | Shopwice" fullWidth={true}>

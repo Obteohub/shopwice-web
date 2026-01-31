@@ -6,11 +6,17 @@ import { useReviewsStore } from '@/stores/reviewsStore';
  * by fetching data from the REST API once.
  */
 const ReviewsInitializer = () => {
-    const { fetchAllReviews } = useReviewsStore();
+    const { fetchAllReviews, reviews, lastFetched, isLoading } = useReviewsStore();
 
     useEffect(() => {
-        fetchAllReviews();
-    }, [fetchAllReviews]);
+        const now = Date.now();
+        const isStale = !lastFetched || (now - lastFetched > 24 * 60 * 60 * 1000);
+
+        // Only fetch if we have no reviews, or data is stale, AND we are not currently loading
+        if ((reviews.length === 0 || isStale) && !isLoading) {
+            fetchAllReviews();
+        }
+    }, [fetchAllReviews, reviews.length, lastFetched, isLoading]);
 
     return null;
 };

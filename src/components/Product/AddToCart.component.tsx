@@ -15,7 +15,7 @@ import { getFormattedCart } from '@/utils/functions/functions';
 
 // GraphQL
 import { GET_CART } from '@/utils/gql/GQL_QUERIES';
-import { ADD_TO_CART } from '@/utils/gql/GQL_MUTATIONS';
+import { ADD_TO_CART, UPDATE_CART } from '@/utils/gql/GQL_MUTATIONS';
 
 interface IImage {
   __typename: string;
@@ -159,6 +159,7 @@ const AddToCart = ({
   // Get cart data query
   const { data, refetch } = useQuery(GET_CART, {
     notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
@@ -185,6 +186,9 @@ const AddToCart = ({
     awaitRefetchQueries: true,
   });
 
+  // Helper Mutation for clearing cart (Buy Now)
+  const [updateCart] = useMutation(UPDATE_CART);
+
   useEffect(() => {
     if (addToCartData) {
       // Update the cart with new values in React context.
@@ -206,7 +210,34 @@ const AddToCart = ({
     }
   }, [addToCartError]);
 
-  const handleAddToCart = () => {
+
+
+  const handleAddToCart = async () => {
+    // If Buy Now, try to clear cart first to remove "ghosts" and ensure clean checkout
+    if (buyNow && data?.cart?.contents?.nodes?.length > 0) {
+      try {
+        const currentItems = data.cart.contents.nodes;
+        const emptyItems = currentItems.map((item: any) => ({
+          key: item.key,
+          quantity: 0
+        }));
+
+        await updateCart({
+          variables: {
+            input: {
+              clientMutationId: uuidv4(),
+              items: emptyItems
+            }
+          }
+        });
+        console.log("AddToCart: Cart cleared for Buy Now");
+      } catch (e) {
+        console.error("AddToCart: Failed to clear cart before Buy Now", e);
+        // Verify if we should proceed or stop? Proceeding might mix items.
+        // But usually safe to proceed as the user wants to buy THIS item.
+      }
+    }
+
     addToCart();
   };
 

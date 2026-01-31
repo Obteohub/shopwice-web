@@ -55,9 +55,15 @@ const PromoBoxes = ({ promoProduct }: PromoBoxesProps) => {
                                             <span className="text-gray-400 text-sm line-through">{formatPrice(promoProduct.regularPrice)}</span>
                                         )}
                                     </div>
-                                    <Link href={`/product/${promoProduct.slug}`} className="text-[#F07F02] font-bold text-sm uppercase flex items-center gap-1 hover:gap-2 transition-all">
-                                        Shop Now <span>&rarr;</span>
-                                    </Link>
+                                    {promoProduct.slug ? (
+                                        <Link href={`/product/${promoProduct.slug}`} className="text-[#F07F02] font-bold text-sm uppercase flex items-center gap-1 hover:gap-2 transition-all">
+                                            Shop Now <span>&rarr;</span>
+                                        </Link>
+                                    ) : (
+                                        <span className="text-gray-400 font-bold text-sm uppercase flex items-center gap-1 cursor-not-allowed">
+                                            Shop Now <span>&rarr;</span>
+                                        </span>
+                                    )}
                                 </div>
                             </>
                         ) : (

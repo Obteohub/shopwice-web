@@ -171,7 +171,11 @@ const SingleProductFinal = ({
                             )}
                             <div ref={reviewsRef} className="scroll-mt-24">
                                 <Accordion title={`Reviews (${reviewCount || 0})`}>
-                                    <ProductReviewsREST productId={product.databaseId} />
+                                    <ProductReviewsREST
+                                        productId={product.databaseId}
+                                        productImage={image?.sourceUrl || placeholderFallBack}
+                                        productName={name}
+                                    />
                                 </Accordion>
                             </div>
                             {((productCategories?.nodes && productCategories.nodes.length > 0) || sku) && (
@@ -463,10 +467,10 @@ const SingleProductFinal = ({
                                         ) : (
                                             <div className="flex flex-col md:flex-row gap-2">
                                                 <div className="w-full md:flex-1">
-                                                    <AddToCart product={product} fullWidth={true} quantity={quantity} />
+                                                    <AddToCart product={product} fullWidth={true} quantity={quantity} key={`cart-${quantity}`} />
                                                 </div>
                                                 <div className="w-full md:flex-1">
-                                                    <AddToCart product={product} fullWidth={true} buyNow={true} quantity={quantity} />
+                                                    <AddToCart product={product} fullWidth={true} buyNow={true} quantity={quantity} key={`buy-${quantity}`} />
                                                 </div>
                                             </div>
                                         )}
@@ -509,7 +513,11 @@ const SingleProductFinal = ({
                     {/* Reviews Mobile */}
                     <div ref={reviewsRef} className="scroll-mt-24">
                         <Accordion title={`Reviews (${reviewCount || 0})`}>
-                            <ProductReviewsREST productId={product.databaseId} />
+                            <ProductReviewsREST
+                                productId={product.databaseId}
+                                productImage={image?.sourceUrl || placeholderFallBack}
+                                productName={name}
+                            />
                         </Accordion>
                     </div>
                     {((productCategories?.nodes && productCategories.nodes.length > 0) || sku) && (

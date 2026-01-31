@@ -48,38 +48,53 @@ export const useReviewsStore = create<ReviewsState>()(
                 set({ isLoading: true, error: null });
 
                 try {
-                    const apiUrl = process.env.NEXT_PUBLIC_REST_API_URL;
-                    if (!apiUrl) throw new Error('REST API URL is not defined in environment variables');
+                    const apiUrl = process.env.NEXT_PUBLIC_REST_API_URL || '/api';
+                    console.log('[ReviewsStore] Using API URL:', apiUrl);
 
-                    const fetchUrl = `${apiUrl}/products/reviews?per_page=100`;
-                    console.log(`[ReviewsStore] Syncing all reviews: ${fetchUrl}`);
+                    let allReviews: Review[] = [];
+                    let page = 1;
+                    let hasMore = true;
 
-                    const response = await fetch(fetchUrl);
+                    while (hasMore) {
+                        const fetchUrl = `${apiUrl}/products/reviews?per_page=20&page=${page}`;
+                        console.log(`[ReviewsStore] Syncing batch ${page}: ${fetchUrl}`);
 
-                    if (!response.ok) {
-                        const errorMsg = `Server returned ${response.status} ${response.statusText}`;
-                        console.error(`[ReviewsStore] ${errorMsg}`);
-                        throw new Error(errorMsg);
+                        const response = await fetch(fetchUrl);
+
+                        if (!response.ok) {
+                            const errorMsg = `Server returned ${response.status} ${response.statusText}`;
+                            console.error(`[ReviewsStore] ${errorMsg}`);
+                            throw new Error(errorMsg);
+                        }
+
+                        const contentType = response.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error(`Expected JSON but received: ${contentType}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (Array.isArray(data)) {
+                            allReviews = [...allReviews, ...data];
+                            if (data.length < 20) {
+                                hasMore = false;
+                            } else {
+                                page++;
+                            }
+                            // Optional: Update state incrementally if desired, but updating once at end is safer for renders
+                        } else {
+                            throw new Error('Invalid reviews data received: expected an array');
+                        }
                     }
 
-                    const contentType = response.headers.get("content-type");
-                    if (!contentType || !contentType.includes("application/json")) {
-                        throw new Error(`Expected JSON but received: ${contentType}`);
-                    }
+                    set({
+                        reviews: allReviews,
+                        lastFetched: now,
+                        isLoading: false,
+                        error: null
+                    });
+                    console.log(`[ReviewsStore] Successfully synced total of ${allReviews.length} reviews.`);
 
-                    const data = await response.json();
-
-                    if (Array.isArray(data)) {
-                        set({
-                            reviews: data,
-                            lastFetched: now,
-                            isLoading: false,
-                            error: null
-                        });
-                        console.log(`[ReviewsStore] Successfully synced ${data.length} reviews.`);
-                    } else {
-                        throw new Error('Invalid reviews data received: expected an array');
-                    }
                 } catch (error: any) {
                     console.error('Reviews Store Critical Error:', error);
                     const errorMessage = error.message || 'Unknown network or parsing error';

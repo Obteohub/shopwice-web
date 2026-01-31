@@ -286,3 +286,19 @@ export const RESET_USER_PASSWORD = gql`
     }
   }
 `;
+export const CLEAR_CART_MUTATION = gql`
+  mutation CLEAR_CART_MUTATION($input: RemoveCouponsInput!) {
+    removeCoupons(input: $input) {
+      cart {
+        contents {
+           nodes {
+               key
+           }
+        }
+      }
+    }
+  }
+`;
+// Note: WC GraphQL doesn't have a direct 'emptyCart' mutation exposed by default in some versions.
+// We usually empty it by removing all items or setting quantity to 0.
+// We will use the existing UPDATE_CART logic to loop through and remove all items in the frontend component.

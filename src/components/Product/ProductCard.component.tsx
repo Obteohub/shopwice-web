@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { paddedPrice } from '@/utils/functions/functions';
@@ -47,8 +48,11 @@ const ProductCard = ({
   const formattedSalePrice = salePrice ? paddedPrice(salePrice, 'GH₵') : salePrice;
 
   // Debugging log
-  // Debugging log
-  // console.log(`Product: ${name}`, { productCategories, attributes });
+  useEffect(() => {
+    if (!slug) {
+      console.warn(`[ProductCard] Missing slug for product: ${name}`, { databaseId, slug });
+    }
+  }, [slug, name, databaseId]);
 
   // Check if product is in "Mobile Phones" category
   const isMobilePhone = productCategories?.nodes?.some(
@@ -85,20 +89,37 @@ const ProductCard = ({
   return (
     <div className="group relative h-full flex flex-col w-full overflow-hidden bg-white">
       <div className="aspect-square overflow-hidden bg-gray-100 relative shrink-0">
-        <Link href={`/product/${slug}`} className="relative block w-full h-full">
-          {image?.sourceUrl ? (
-            <Image
-              src={image.sourceUrl}
-              alt={name}
-              fill className="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            />
-          ) : (
-            <div className="h-full w-full bg-gray-100 flex items-center justify-center">
-              <span className="text-gray-400">No image</span>
-            </div>
-          )}
-        </Link>
+        {slug ? (
+          <Link href={`/product/${slug}`} className="relative block w-full h-full">
+            {image?.sourceUrl ? (
+              <Image
+                src={image.sourceUrl}
+                alt={name}
+                fill className="w-full h-full object-cover object-center transition duration-300 group-hover:scale-105"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            ) : (
+              <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400">No image</span>
+              </div>
+            )}
+          </Link>
+        ) : (
+          <div className="relative block w-full h-full pointer-events-none">
+            {image?.sourceUrl ? (
+              <Image
+                src={image.sourceUrl}
+                alt={name}
+                fill className="w-full h-full object-cover object-center"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            ) : (
+              <div className="h-full w-full bg-gray-100 flex items-center justify-center">
+                <span className="text-gray-400">No image</span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Refurbished Badge */}
         {showRefurbishedBadge && (
@@ -123,10 +144,27 @@ const ProductCard = ({
       </div>
 
       <div className="flex flex-col flex-grow mt-2 justify-between">
-        <Link href={`/product/${slug}`}>
+        {slug ? (
+          <Link href={`/product/${slug}`}>
+            <div>
+              <p
+                className="text-sm font-normal text-left cursor-pointer hover:text-gray-600 transition-colors leading-[1.2] tracking-tighter min-h-[34px] break-words"
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineClamp: 2 }}
+              >
+                {name}
+              </p>
+              <div className="flex justify-start items-center gap-1 mt-0.5">
+                <StarRating rating={averageRating} size={14} />
+                {reviewCount !== undefined && reviewCount > 0 && (
+                  <span className="text-xs text-gray-500">({reviewCount})</span>
+                )}
+              </div>
+            </div>
+          </Link>
+        ) : (
           <div>
             <p
-              className="text-sm font-normal text-left cursor-pointer hover:text-gray-600 transition-colors leading-[1.2] tracking-tighter min-h-[34px] break-words"
+              className="text-sm font-normal text-left text-gray-900 leading-[1.2] tracking-tighter min-h-[34px] break-words"
               style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineClamp: 2 }}
             >
               {name}
@@ -138,7 +176,7 @@ const ProductCard = ({
               )}
             </div>
           </div>
-        </Link>
+        )}
         <div className="mt-1 text-left">
           {onSale ? (
             <div className="flex flex-col items-start gap-0.5">

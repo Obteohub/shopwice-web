@@ -13,7 +13,7 @@ const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
  * Middleware operation
  * If we have a session token in localStorage, add it to the GraphQL request as a Session header.
  */
-export const middleware = new ApolloLink(async (operation, forward) => {
+export const middleware = new ApolloLink((operation, forward) => {
   /**
    * If session data exist in local storage, set value as session header.
    */
@@ -86,6 +86,18 @@ export const afterware = new ApolloLink((operation, forward) =>
           JSON.stringify({ token: session, createdTime: Date.now() }),
         );
       }
+    }
+
+    // Check for errors in response
+    if (response.errors) {
+      response.errors.forEach(err => {
+        if (err.message === "The 'woocommerce-session' header is invalid") {
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('woo-session');
+            window.location.reload();
+          }
+        }
+      })
     }
 
     return response;

@@ -3,8 +3,16 @@ import { persist } from 'zustand/middleware';
 
 interface GlobalState {
     featuredCategories: any[];
-    topRatedProducts: any[];
-    bestSellingProducts: any[];
+    homeData: {
+        topRatedProducts: any[];
+        bestSellingProducts: any[];
+        airConditionerProducts: any[];
+        mobilePhonesOnSale: any[];
+        laptopsProducts: any[];
+        speakersProducts: any[];
+        televisionsProducts: any[];
+        promoProduct: any | null;
+    };
     homeDataLoaded: boolean;
     setHomeData: (data: any) => void;
     setCategories: (categories: any[]) => void;
@@ -14,12 +22,28 @@ export const useGlobalStore = create<GlobalState>()(
     persist(
         (set) => ({
             featuredCategories: [],
-            topRatedProducts: [],
-            bestSellingProducts: [],
+            homeData: {
+                topRatedProducts: [],
+                bestSellingProducts: [],
+                airConditionerProducts: [],
+                mobilePhonesOnSale: [],
+                laptopsProducts: [],
+                speakersProducts: [],
+                televisionsProducts: [],
+                promoProduct: null,
+            },
             homeDataLoaded: false,
             setHomeData: (data) => set({
-                topRatedProducts: data.topRatedProducts || [],
-                bestSellingProducts: data.bestSellingProducts || [],
+                homeData: {
+                    topRatedProducts: data.topRatedProducts || [],
+                    bestSellingProducts: data.bestSellingProducts || [],
+                    airConditionerProducts: data.airConditionerProducts || [],
+                    mobilePhonesOnSale: data.mobilePhonesOnSale || [],
+                    laptopsProducts: data.laptopsProducts || [],
+                    speakersProducts: data.speakersProducts || [],
+                    televisionsProducts: data.televisionsProducts || [],
+                    promoProduct: data.promoProduct || null,
+                },
                 homeDataLoaded: true
             }),
             setCategories: (categories) => set({ featuredCategories: categories }),

@@ -38,8 +38,8 @@ export default function Custom404({ bestSellers, newest, topRated }: Custom404Pr
                             Best Sellers
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                            {bestSellers.map((product) => (
-                                <ProductCard key={product.databaseId} {...product} />
+                            {bestSellers.map((product, index) => (
+                                <ProductCard key={product.databaseId || product.slug || index} {...product} />
                             ))}
                         </div>
                     </section>
@@ -52,8 +52,8 @@ export default function Custom404({ bestSellers, newest, topRated }: Custom404Pr
                             New Arrivals
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                            {newest.map((product) => (
-                                <ProductCard key={product.databaseId} {...product} />
+                            {newest.map((product, index) => (
+                                <ProductCard key={product.databaseId || product.slug || index} {...product} />
                             ))}
                         </div>
                     </section>
@@ -66,8 +66,8 @@ export default function Custom404({ bestSellers, newest, topRated }: Custom404Pr
                             Top Rated Products
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
-                            {topRated.map((product) => (
-                                <ProductCard key={product.databaseId} {...product} />
+                            {topRated.map((product, index) => (
+                                <ProductCard key={product.databaseId || product.slug || index} {...product} />
                             ))}
                         </div>
                     </section>

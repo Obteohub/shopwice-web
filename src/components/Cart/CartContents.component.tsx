@@ -1,200 +1,242 @@
-import { useEffect, useState } from 'react';
-import { useMutation, useQuery } from '@apollo/client';
-import { useRouter } from 'next/router';
-import { v4 as uuidv4 } from 'uuid';
 
-import { useCartStore } from '@/stores/cartStore';
-import LoadingSpinner from '../LoadingSpinner/LoadingSpinner.component';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@apollo/client';
+import { v4 as uuidv4 } from 'uuid';
+import Link from 'next/link';
+
+// Components
+import LoadingSpinner from '@/components/LoadingSpinner/LoadingSpinner.component';
 import CartItem from './CartItem.component';
 import CartSummary from './CartSummary.component';
 import EmptyCart from './EmptyCart.component';
 import UpsellCarousel from './UpsellCarousel.component';
 
-import {
-  getFormattedCart,
-  getUpdatedItems,
-  IProductRootObject,
-} from '@/utils/functions/functions';
-
+// Utils & State
+import { getUpdatedItems, IProductRootObject } from '@/utils/functions/functions';
 import { GET_CART } from '@/utils/gql/GQL_QUERIES';
 import { UPDATE_CART } from '@/utils/gql/GQL_MUTATIONS';
+import { useCartStore } from '@/stores/cartStore';
 
 const CartContents = () => {
-  const router = useRouter();
-  const { clearWooCommerceSession, syncWithWooCommerce } = useCartStore();
+  const { clearWooCommerceSession } = useCartStore();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Fetch Cart Query
-  const { data, refetch, loading: isFetching, error } = useQuery(GET_CART, {
+  // -------------------------------------------------------------------------
+  // 1. Data Fetching (Strict Network Policy)
+  // -------------------------------------------------------------------------
+  const { data, loading: isFetching, error, refetch } = useQuery(GET_CART, {
+    fetchPolicy: 'network-only', // Always fetch fresh from server
     notifyOnNetworkStatusChange: true,
-  });
-
-  useEffect(() => {
-    if (data) {
-      const updatedCart = getFormattedCart(data);
-      if (!updatedCart && !data?.cart?.contents?.nodes?.length) {
-        clearWooCommerceSession();
-        return;
+    onError: (err) => {
+      console.error('[Cart] Fetch Error:', err);
+      // Auto-heal session if invalid
+      if (
+        err.message.includes('session') ||
+        err.message.includes('cookie') ||
+        err.message.includes('expired')
+      ) {
+        handleSessionReset();
       }
-      if (updatedCart) {
-        syncWithWooCommerce(updatedCart);
-      }
-    }
-  }, [data, clearWooCommerceSession, syncWithWooCommerce]);
-
-  // Update Cart Mutation
-  const [updateCart, { data: updateCartData }] = useMutation(UPDATE_CART, {
-    refetchQueries: [{ query: GET_CART }],
-    awaitRefetchQueries: true,
-    onError: () => {
-      setIsUpdating(false);
     }
   });
 
-  useEffect(() => {
-    if (updateCartData) {
+  // -------------------------------------------------------------------------
+  // 2. Mutations (Update & Remove)
+  // -------------------------------------------------------------------------
+  const [updateCart] = useMutation(UPDATE_CART, {
+    onCompleted: () => {
       setIsUpdating(false);
+      refetch();
+    },
+    onError: (err) => {
+      setIsUpdating(false);
+      console.error('[Cart] Update Error:', err);
+
+      // Critical: If specific keys fail to update, it means they are "ghosts".
+      // We must reset the session.
+      if (
+        err.message.includes('failed to update') ||
+        err.message.includes('session') ||
+        err.message.includes('invalid')
+      ) {
+        handleSessionReset();
+      } else {
+        alert(`Error updating cart: ${err.message}`);
+      }
     }
-  }, [updateCartData]);
+  });
 
-  // Effect to refetch on mount
-  useEffect(() => {
-    refetch();
-  }, [refetch]);
+  // -------------------------------------------------------------------------
+  // 3. Handlers
+  // -------------------------------------------------------------------------
+  const handleSessionReset = async () => {
+    console.warn('[Cart] Resetting Session due to sync error...');
 
-  // Handlers
+    // 1. Clear Local Storage
+    clearWooCommerceSession();
+
+    // 2. Clear Server Cookies (HTTPOnly)
+    try {
+      await fetch('/api/reset-session');
+    } catch (e) {
+      console.error("Failed to reset server session", e);
+    }
+
+    // 3. Reload
+    if (typeof window !== 'undefined') window.location.reload();
+  };
+
   const handleUpdateQuantity = (item: IProductRootObject, newQty: number) => {
     if (newQty < 1) return;
     setIsUpdating(true);
-
-    const updatedItems = getUpdatedItems(data.cart.contents.nodes, newQty, item.key);
-
-    updateCart({
-      variables: {
-        input: {
-          clientMutationId: uuidv4(),
-          items: updatedItems,
-        },
-      },
-    });
+    const currentItems = data?.cart?.contents?.nodes || [];
+    const updatedItems = getUpdatedItems(currentItems, newQty, item.key);
+    executeMutation(updatedItems);
   };
 
   const handleRemoveItem = (item: IProductRootObject) => {
+    if (!confirm('Remove this item?')) return;
     setIsUpdating(true);
-    // Setting quantity to 0 effectively removes it in some WC configs, 
-    // or we might need `removeFromCart` mutation. 
-    // Using `getUpdatedItems` with 0 usually works if the function supports it, 
-    // otherwise we might need a specific remove logic. 
-    // The previous code called `handleRemoveProductClick` which used `getUpdatedItems` with 0? 
-    // Wait, the previous code called `getUpdatedItems(products, 0, cartKey)`? 
-    // Let's verify `getUpdatedItems`. It sets quantity to newQty.
-    // If WC API treats 0 as remove, we are good.
-    // Actually, `handleRemoveProductClick` in the old code did exactly that.
+    const currentItems = data?.cart?.contents?.nodes || [];
+    const updatedItems = getUpdatedItems(currentItems, 0, item.key);
+    executeMutation(updatedItems);
+  };
 
-    const updatedItems = getUpdatedItems(data.cart.contents.nodes, 0, item.key);
+  const handleClearCart = () => {
+    if (!confirm('Are you sure you want to clear your entire cart?')) return;
+    setIsUpdating(true);
+    const currentItems = data?.cart?.contents?.nodes || [];
+    // Set all quantities to 0
+    const emptyItems = currentItems.map((item: any) => ({
+      key: item.key,
+      quantity: 0
+    }));
+    executeMutation(emptyItems);
+  };
+
+  const executeMutation = (itemsInput: any[]) => {
     updateCart({
       variables: {
         input: {
           clientMutationId: uuidv4(),
-          items: updatedItems,
+          items: itemsInput,
         },
       },
     });
   };
 
-  const cartItems = data?.cart?.contents?.nodes || [];
+  // -------------------------------------------------------------------------
+  // 4. Derived Data
+  // -------------------------------------------------------------------------
+  const cartItems = (data?.cart?.contents?.nodes || []) as IProductRootObject[];
+  const hasItems = cartItems.length > 0;
   const cartTotal = data?.cart?.total || '0';
   const cartSubtotal = data?.cart?.subtotal || cartTotal;
-  const totalProductsCount = data?.cart?.contents?.itemCount || cartItems.reduce((acc: number, item: any) => acc + item.quantity, 0);
+  const totalProductsCount = data?.cart?.contents?.itemCount || 0;
 
-  // Check if cart is empty
-  if (!isFetching && cartItems.length === 0) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <EmptyCart />
-        {/* Show Bestsellers or Upsells even on empty cart? Maybe. */}
-      </div>
-    );
-  }
+  // -------------------------------------------------------------------------
+  // 5. Render Logic
+  // -------------------------------------------------------------------------
 
-  // Loading state (initial)
+  // Initial Load
   if (isFetching && !data) {
     return (
-      <div className="flex justify-center items-center min-h-[500px]">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
         <LoadingSpinner />
+        <p className="text-gray-500 animate-pulse">Loading your cart...</p>
       </div>
     );
   }
 
-  // Error state
+  // Critical Error State
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded relative">
-          <strong className="font-bold">Error loading cart: </strong>
-          <span className="block sm:inline">{error.message}</span>
-          <button onClick={() => refetch()} className="underline ml-2">Try again</button>
+      <div className="container mx-auto px-4 py-20 text-center">
+        <div className="bg-red-50 inline-block p-8 rounded-lg border border-red-100">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Cart Error</h2>
+          <p className="text-gray-600 mb-6">{error.message}</p>
+          <button
+            onClick={handleSessionReset}
+            className="px-6 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-semibold"
+          >
+            Reset Application Session
+          </button>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="px-0 md:container md:mx-auto md:px-4 py-4 md:py-8">
-      <h1 className="text-2xl md:text-3xl font-medium  mb-4 md:mb-4 px-4 md:px-0">Shopping Cart</h1>
+  // Empty State
+  if (!hasItems) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8 text-gray-900">Shopping Cart</h1>
+        <EmptyCart />
+      </div>
+    );
+  }
 
-      <div className="flex flex-col-reverse lg:flex-row gap-6 relative">
-        {/* Left Column: Cart Items */}
-        <div className="w-full lg:w-2/3">
-          <div className="bg-white rounded-none md:rounded-lg shadow-sm border-t md:border border-gray-200 overflow-hidden">
-            <div className="space-y-0 md:space-y-1">
-              {cartItems.map((item: IProductRootObject) => (
-                <CartItem
-                  key={item.key}
-                  item={item}
-                  onUpdateQuantity={(qty) => handleUpdateQuantity(item, qty)}
-                  onRemove={() => handleRemoveItem(item)}
-                  loading={isUpdating}
-                />
-              ))}
-            </div>
+  // Content State
+  return (
+    <div className="container mx-auto px-4 py-8 relative">
+      {/* Header */}
+      <div className="flex flex-row justify-between items-end mb-8 border-b border-gray-100 pb-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
+          <p className="text-gray-500 text-sm mt-1">{totalProductsCount} {totalProductsCount === 1 ? 'item' : 'items'}</p>
+        </div>
+        <button
+          onClick={handleClearCart}
+          className="text-red-500 hover:text-red-700 text-sm font-medium hover:underline transition-colors focus:outline-none"
+          disabled={isUpdating}
+        >
+          Clear Cart
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        {/* Main list */}
+        <div className="w-full lg:w-2/3 flex flex-col gap-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden divide-y divide-gray-100">
+            {cartItems.map((item) => (
+              <CartItem
+                key={item.key}
+                item={item}
+                loading={isUpdating}
+                onUpdateQuantity={(qty) => handleUpdateQuantity(item, qty)}
+                onRemove={() => handleRemoveItem(item)}
+              />
+            ))}
           </div>
 
-          {/* Cross Sells / Upsells (Below items) */}
-          <div className="mt-12">
-            {/* We would fetch cross-sells here. For now passing empty or mock if data not available in cart query yet.
-                    To do this properly, we should modify GET_CART to fetch cross-sell items or make a separate query.
-                    For this iteration, I'll allow the component to render if we had data.
-                */}
+          {/* Up-sells */}
+          <div className="mt-4">
             <UpsellCarousel title="You might also like" products={[]} />
           </div>
         </div>
 
-        {/* Right Column: Totals (Sticky) */}
-        <div className="w-full lg:w-1/3 lg:sticky lg:top-24 h-fit">
-          <CartSummary
-            subtotal={cartSubtotal}
-            total={cartTotal}
-            totalProductsCount={totalProductsCount}
-          />
-          {/* Optional Trust Badges or banners below summary */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-100 text-sm text-gray-600">
-            <p className="flex items-center gap-2 mb-2">
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              <span>Free Shipping on orders over GH₵500</span>
-            </p>
-            <p className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-              <span>30 Days Easy Returns</span>
-            </p>
+        {/* Sidebar Summary */}
+        <div className="w-full lg:w-1/3">
+          <div className="sticky top-24">
+            <CartSummary
+              subtotal={cartSubtotal}
+              total={cartTotal}
+              totalProductsCount={totalProductsCount}
+            />
+            {/* Secure Checkout Badges could go here */}
+            <div className="mt-6 flex justify-center gap-4 grayscale opacity-60">
+              {/* Placeholders for payment icons if needed */}
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Global Overlay Loading for mutations */}
       {isUpdating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-          <div className="bg-white p-4 rounded-full shadow-lg">
+        <div className="fixed inset-0 z-50 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-xl flex flex-col items-center border border-gray-100">
             <LoadingSpinner />
+            <p className="text-sm font-semibold text-gray-700 mt-4">Updating Cart...</p>
           </div>
         </div>
       )}

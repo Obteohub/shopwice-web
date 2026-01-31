@@ -54,8 +54,8 @@ const BestSellingSlider = ({ products }: BestSellingSliderProps) => {
 
                 {/* Mobile View: Horizontal Scroll */}
                 <div className="md:hidden flex overflow-x-auto snap-x snap-mandatory gap-1 pb-4 no-scrollbar">
-                    {products.map((product) => (
-                        <div key={`mob-best-${product.databaseId}`} className="snap-start shrink-0" style={{ width: '40vw' }}>
+                    {products.map((product, index) => (
+                        <div key={`mob-best-${product.databaseId || index}`} className="snap-start shrink-0" style={{ width: '40vw' }}>
                             <ProductCard
                                 databaseId={product.databaseId}
                                 name={product.name}
@@ -85,9 +85,9 @@ const BestSellingSlider = ({ products }: BestSellingSliderProps) => {
                             width: mounted ? `${(products.length / slidesPerView) * 100}%` : '100%'
                         }}
                     >
-                        {products.map((product) => (
+                        {products.map((product, index) => (
                             <div
-                                key={`desk-best-${product.databaseId}`}
+                                key={`desk-best-${product.databaseId || index}`}
                                 className="px-2"
                                 style={{
                                     width: mounted ? `${100 / products.length}%` : '100%', // Percentage relative to the CONTAINER width
