@@ -18670,70 +18670,6 @@ export const useCollectionData = () => {
 };
 ````
 
-## File: src/pages/location/[slug].tsx
-````typescript
-import { withRouter } from 'next/router';
-// Components
-import Layout from '@/components/Layout/Layout.component';
-import ProductList from '@/components/Product/ProductList.component';
-import client from '@/utils/apollo/ApolloClient';
-import { GET_LOCATION_DATA_BY_SLUG } from '@/utils/gql/LOCATION_QUERIES';
-import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
-/**
- * Display location page with filtering, sorting, and infinite scroll
- */
-const LocationPage = ({
-    locationName,
-    products,
-    pageInfo,
-    slug,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-    return (
-        <Layout title={`${locationName ? locationName : 'Location'}`}>
-            <div className="container mx-auto px-4 py-8">
-                {products && products.length > 0 ? (
-                    <ProductList
-                        products={products}
-                        title={locationName || 'Products'}
-                        pageInfo={pageInfo}
-                        slug={slug}
-                        query={GET_LOCATION_DATA_BY_SLUG}
-                        queryVariables={{ slug }}
-                    />
-                ) : (
-                    <div className="flex justify-center items-center min-h-[400px]">
-                        <p className="text-xl text-gray-500">No products found for this location</p>
-                    </div>
-                )}
-            </div>
-        </Layout>
-    );
-};
-export const runtime = 'experimental-edge';
-export default withRouter(LocationPage);
-export const getServerSideProps: GetServerSideProps = async ({
-    query: { slug },
-}) => {
-    const res = await client.query({
-        query: GET_LOCATION_DATA_BY_SLUG,
-        variables: { slug: slug, after: null },
-    });
-    const locationData = res.data.productLocation;
-    const productsData = res.data.products;
-    const products = productsData ? productsData.nodes : [];
-    const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
-    const locationName = locationData ? locationData.name : slug;
-    return {
-        props: {
-            locationName: locationName as string,
-            products,
-            pageInfo,
-            slug: slug as string,
-        },
-    };
-};
-````
-
 ## File: src/pages/_app.tsx
 ````typescript
 // Imports
@@ -18805,88 +18741,6 @@ export default function CartPage() {
     </Layout>
   );
 }
-````
-
-## File: src/pages/shoes.tsx
-````typescript
-import React from 'react';
-import { GetStaticProps } from 'next';
-import Layout from '@/components/Layout/Layout.component';
-import ProductList from '@/components/Product/ProductList.component';
-import client from '@/utils/apollo/ApolloClient';
-import { GET_CATEGORY_DATA_BY_SLUG } from '@/utils/gql/GQL_QUERIES';
-import BackButton from '@/components/UI/BackButton.component';
-interface ShoesPageProps {
-    category: any;
-    products: any[];
-    pageInfo: {
-        hasNextPage: boolean;
-        endCursor: string | null;
-    };
-    slug: string;
-}
-const ShoesPage = ({ category, products, pageInfo, slug }: ShoesPageProps) => {
-    return (
-        <Layout title={category?.name || 'Shoes'} fullWidth={true}>
-            <div className="px-2 md:px-4 pt-1 pb-1">
-                <BackButton />
-                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
-                    {category?.name?.toLowerCase() || 'Shoes'}
-                </h1>
-                {category?.description && (
-                    <div
-                        className="mb-10 text-gray-500 max-w-3xl"
-                        dangerouslySetInnerHTML={{ __html: category.description }}
-                    />
-                )}
-                <ProductList
-                    products={products}
-                    title={category?.name || 'Shoes'}
-                    pageInfo={pageInfo}
-                    slug={slug}
-                    query={GET_CATEGORY_DATA_BY_SLUG}
-                    queryVariables={{ slug, id: slug }}
-                    totalCount={category?.count}
-                />
-            </div>
-        </Layout>
-    );
-};
-export const runtime = 'experimental-edge';
-export default ShoesPage;
-export const getStaticProps: GetStaticProps = async () => {
-    const slug = 'shoes'; // Hardcoded slug
-    try {
-        const { data } = await client.query({
-            query: GET_CATEGORY_DATA_BY_SLUG,
-            variables: { slug, id: slug },
-        });
-        // Even if category is null (not distinct category), we might still show products if valid?
-        // But usually GET_CATEGORY_DATA_BY_SLUG relies on category existing.
-        // If user says "shoes are not categories", maybe we should just SEARCH for "shoes"?
-        // But let's try category first. If it fails, fallback to search?
-        // Given existing patterns, likely "shoes" *is* a category slug.
-        return {
-            props: {
-                category: data?.productCategory || { name: 'Shoes', count: data?.products?.nodes?.length || 0 },
-                products: data?.products?.nodes || [],
-                pageInfo: data?.products?.pageInfo || { hasNextPage: false, endCursor: null },
-                slug,
-            },
-            revalidate: 60,
-        };
-    } catch (error) {
-        console.error('Error fetching shoes data:', error);
-        return {
-            props: {
-                category: { name: 'Shoes' },
-                products: [],
-                pageInfo: { hasNextPage: false, endCursor: null },
-                slug: 'shoes'
-            }
-        };
-    }
-};
 ````
 
 ## File: src/stores/cartStore.ts
@@ -20326,118 +20180,79 @@ const GlobalInitializer = () => {
 export default GlobalInitializer;
 ````
 
-## File: src/pages/brand/[slug].tsx
+## File: src/pages/location/[slug].tsx
 ````typescript
 import { withRouter } from 'next/router';
 // Components
 import Layout from '@/components/Layout/Layout.component';
 import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
-import { GET_BRAND_DATA_BY_SLUG } from '@/utils/gql/TAXONOMY_QUERIES';
-import { GetStaticProps, GetStaticPaths, InferGetStaticPropsType } from 'next';
-import Link from 'next/link';
-import BackButton from '@/components/UI/BackButton.component';
+import { GET_LOCATION_DATA_BY_SLUG } from '@/utils/gql/LOCATION_QUERIES';
+import { GetServerSideProps, InferGetServerSidePropsType } from 'next';
 /**
- * Display brand page with filtering, sorting, and infinite scroll
+ * Display location page with filtering, sorting, and infinite scroll
  */
-const BrandPage = ({
-    brandName,
+const LocationPage = ({
+    locationName,
     products,
     pageInfo,
     slug,
-    subBrands,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
     return (
-        <Layout title={`${brandName ? brandName : 'Brand'}`} fullWidth={true}>
-            <div className="px-2 md:px-4 pt-1 pb-1">
-                <BackButton />
-                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
-                    {brandName?.toLowerCase()}
-                </h1>
-                {/* Sub-brand Chips */}
-                {subBrands && subBrands.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {subBrands.map((subBrand: any) => (
-                            <Link
-                                key={subBrand.id}
-                                href={`/brand/${subBrand.slug}`}
-                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-[#2c3338] text-sm font-medium rounded-full transition-colors border border-gray-200 capitalize"
-                            >
-                                {subBrand.name.toLowerCase()}
-                            </Link>
-                        ))}
-                    </div>
-                )}
+        <Layout title={`${locationName ? locationName : 'Location'}`}>
+            <div className="container mx-auto px-4 py-8">
                 {products && products.length > 0 ? (
                     <ProductList
                         products={products}
-                        title={brandName || 'Products'}
+                        title={locationName || 'Products'}
                         pageInfo={pageInfo}
                         slug={slug}
-                        query={GET_BRAND_DATA_BY_SLUG}
-                        queryVariables={{ id: slug, slug: [slug] }}
+                        query={GET_LOCATION_DATA_BY_SLUG}
+                        queryVariables={{ slug }}
                     />
                 ) : (
                     <div className="flex justify-center items-center min-h-[400px]">
-                        <p className="text-xl text-gray-500">No products found for this brand</p>
+                        <p className="text-xl text-gray-500">No products found for this location</p>
                     </div>
                 )}
             </div>
         </Layout>
     );
 };
-export const runtime = 'experimental-edge';
-export default withRouter(BrandPage);
-export const getStaticPaths: GetStaticPaths = async () => {
-    return {
-        paths: [],
-        fallback: 'blocking',
-    };
-};
-export const getStaticProps: GetStaticProps = async ({
-    params,
+export default withRouter(LocationPage);
+export const getServerSideProps: GetServerSideProps = async ({
+    query: { slug },
 }) => {
-    const slug = params?.slug as string;
-    try {
-        const res = await client.query({
-            query: GET_BRAND_DATA_BY_SLUG,
-            variables: { id: slug, slug: [slug], after: null },
-            fetchPolicy: 'no-cache'
-        });
-        const brandData = res.data.productBrand;
-        const productsData = res.data.products;
-        const products = productsData ? productsData.nodes : [];
-        const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
-        const brandName = brandData ? brandData.name : slug;
-        const subBrands = brandData?.children?.nodes || [];
-        // Check if brand exists or has content, if strictly needed. 
-        // But for now, if data returns, we render.
-        return {
-            props: {
-                brandName: brandName as string,
-                products,
-                pageInfo,
-                slug,
-                subBrands,
-            },
-            revalidate: 60,
-        };
-    } catch (error) {
-        console.error("Error fetching brand data:", error);
-        return { notFound: true };
-    }
+    const res = await client.query({
+        query: GET_LOCATION_DATA_BY_SLUG,
+        variables: { slug: slug, after: null },
+    });
+    const locationData = res.data.productLocation;
+    const productsData = res.data.products;
+    const products = productsData ? productsData.nodes : [];
+    const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
+    const locationName = locationData ? locationData.name : slug;
+    return {
+        props: {
+            locationName: locationName as string,
+            products,
+            pageInfo,
+            slug: slug as string,
+        },
+    };
 };
 ````
 
-## File: src/pages/product-category/[slug].tsx
+## File: src/pages/shoes.tsx
 ````typescript
 import React from 'react';
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import Layout from '@/components/Layout/Layout.component';
 import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
 import { GET_CATEGORY_DATA_BY_SLUG } from '@/utils/gql/GQL_QUERIES';
-interface CategoryPageProps {
+import BackButton from '@/components/UI/BackButton.component';
+interface ShoesPageProps {
     category: any;
     products: any[];
     pageInfo: {
@@ -20446,14 +20261,13 @@ interface CategoryPageProps {
     };
     slug: string;
 }
-import BackButton from '@/components/UI/BackButton.component';
-const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps) => {
+const ShoesPage = ({ category, products, pageInfo, slug }: ShoesPageProps) => {
     return (
-        <Layout title={category?.name || 'Category'} fullWidth={true}>
+        <Layout title={category?.name || 'Shoes'} fullWidth={true}>
             <div className="px-2 md:px-4 pt-1 pb-1">
                 <BackButton />
                 <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
-                    {category?.name?.toLowerCase()}
+                    {category?.name?.toLowerCase() || 'Shoes'}
                 </h1>
                 {category?.description && (
                     <div
@@ -20463,7 +20277,7 @@ const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps)
                 )}
                 <ProductList
                     products={products}
-                    title={category?.name}
+                    title={category?.name || 'Shoes'}
                     pageInfo={pageInfo}
                     slug={slug}
                     query={GET_CATEGORY_DATA_BY_SLUG}
@@ -20474,100 +20288,39 @@ const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps)
         </Layout>
     );
 };
-export const runtime = 'experimental-edge';
-export default CategoryPage;
-export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
-    const slug = params?.slug as string;
+export default ShoesPage;
+export const getStaticProps: GetStaticProps = async () => {
+    const slug = 'shoes'; // Hardcoded slug
     try {
-        // Cache control
-        res.setHeader(
-            'Cache-Control',
-            'public, s-maxage=60, stale-while-revalidate=59'
-        );
         const { data } = await client.query({
             query: GET_CATEGORY_DATA_BY_SLUG,
             variables: { slug, id: slug },
         });
-        if (!data?.productCategory) {
-            return { notFound: true };
-        }
+        // Even if category is null (not distinct category), we might still show products if valid?
+        // But usually GET_CATEGORY_DATA_BY_SLUG relies on category existing.
+        // If user says "shoes are not categories", maybe we should just SEARCH for "shoes"?
+        // But let's try category first. If it fails, fallback to search?
+        // Given existing patterns, likely "shoes" *is* a category slug.
         return {
             props: {
-                category: data.productCategory,
-                products: data.products.nodes,
-                pageInfo: data.products.pageInfo,
+                category: data?.productCategory || { name: 'Shoes', count: data?.products?.nodes?.length || 0 },
+                products: data?.products?.nodes || [],
+                pageInfo: data?.products?.pageInfo || { hasNextPage: false, endCursor: null },
                 slug,
             },
+            revalidate: 60,
         };
     } catch (error) {
-        console.error('Error fetching category data:', error);
+        console.error('Error fetching shoes data:', error);
         return {
-            notFound: true,
+            props: {
+                category: { name: 'Shoes' },
+                products: [],
+                pageInfo: { hasNextPage: false, endCursor: null },
+                slug: 'shoes'
+            }
         };
     }
-};
-````
-
-## File: src/pages/products.tsx
-````typescript
-import Head from 'next/head';
-import Layout from '@/components/Layout/Layout.component';
-import ProductList from '@/components/Product/ProductList.component';
-import client from '@/utils/apollo/ApolloClient';
-import { FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
-import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
-const Products: NextPage = ({
-  products,
-  pageInfo,
-  loading,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
-  if (loading)
-    return (
-      <Layout title="Products">
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="text-xl">Loading...</div>
-        </div>
-      </Layout>
-    );
-  if (!products)
-    return (
-      <Layout title="Products">
-        <div className="flex justify-center items-center min-h-screen">
-          <p className="text-red-500">No products found</p>
-        </div>
-      </Layout>
-    );
-  return (
-    <Layout title="Products" fullWidth={true}>
-      <Head>
-        <title>Products | WooCommerce Next.js</title>
-      </Head>
-      <div className="pt-1 pb-1">
-        <ProductList
-          products={products}
-          title="All Products"
-          pageInfo={pageInfo}
-          query={FETCH_ALL_PRODUCTS_QUERY}
-        />
-      </div>
-    </Layout>
-  );
-};
-export const runtime = 'experimental-edge';
-export default Products;
-export const getStaticProps: GetStaticProps = async () => {
-  const { data, loading, networkStatus } = await client.query({
-    query: FETCH_ALL_PRODUCTS_QUERY,
-  });
-  return {
-    props: {
-      products: data.products.nodes,
-      pageInfo: data.products.pageInfo,
-      loading,
-      networkStatus,
-    },
-    revalidate: 60,
-  };
 };
 ````
 
@@ -21208,91 +20961,6 @@ const nextConfig = {
 module.exports = nextConfig;
 ````
 
-## File: package.json
-````json
-{
-  "name": "shopwice",
-  "version": "1.2.4",
-  "private": true,
-  "scripts": {
-    "lhci": "lhci autorun",
-    "lhci:perf": "lhci autorun --collect.settings.preset=perf",
-    "lhci:desktop": "lhci autorun --collect.settings.preset=desktop",
-    "dev": "next dev --turbopack",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "format": "prettier --write \"**/*.{js,ts,tsx,json}\"",
-    "playwright": "npx playwright test",
-    "playwright:ui": "npx playwright test --ui",
-    "playwright:debug": "npx playwright test --debug",
-    "playwright:codegen": "playwright codegen",
-    "refresh": "rm -rf node_modules && rm package-lock.json && npm i && npm run format",
-    "generate-reviews": "node scripts/generate-reviews.js",
-    "postbuild": "next-sitemap"
-  },
-  "keywords": [
-    "next.js",
-    "next",
-    "javascript",
-    "framer"
-  ],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@apollo/client": "^3.12.0",
-    "@react-google-maps/api": "^2.20.8",
-    "@react-oauth/google": "^0.13.4",
-    "@types/react": "^19.2.7",
-    "@types/react-facebook-login": "^4.1.11",
-    "autoprefixer": "^10.4.23",
-    "graphql": "^16.12.0",
-    "isomorphic-dompurify": "^2.35.0",
-    "lodash": "^4.17.21",
-    "motion": "^12.23.26",
-    "next": "16.1.1",
-    "next-seo": "^6.6.0",
-    "next-sitemap": "^4.2.3",
-    "node-fetch": "^3.3.2",
-    "nprogress": "^0.2.0",
-    "postcss": "^8.5.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "react-facebook-login": "^4.1.1",
-    "react-hook-form": "^7.69.0",
-    "use-places-autocomplete": "^4.0.1",
-    "uuid": "^13.0.0",
-    "zustand": "^5.0.9"
-  },
-  "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
-    "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.57.0",
-    "@tailwindcss/typography": "^0.5.19",
-    "@types/google.maps": "^3.58.1",
-    "@types/lodash": "^4.17.21",
-    "@types/node": "24.10.4",
-    "@types/nprogress": "^0.2.3",
-    "@types/react-dom": "^19.2.3",
-    "@types/uuid": "^11.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.50.1",
-    "@typescript-eslint/parser": "^8.50.1",
-    "babel-plugin-styled-components": "^2.1.4",
-    "eslint-config-next": "^16.1.1",
-    "postcss-preset-env": "^10.5.0",
-    "prettier": "^3.7.4",
-    "tailwindcss": "^3.4.19",
-    "typescript": "^5.9.3"
-  },
-  "browserslist": [
-    "defaults",
-    "not IE 11",
-    "maintained node versions"
-  ]
-}
-````
-
 ## File: src/components/Product/ProductCard.component.tsx
 ````typescript
 import { useState, useEffect } from 'react';
@@ -21485,32 +21153,184 @@ const ProductCard = ({
 export default ProductCard;
 ````
 
-## File: src/pages/api/reset-session.ts
+## File: src/pages/brand/[slug].tsx
 ````typescript
-import type { NextApiRequest, NextApiResponse } from 'next';
-export const runtime = 'experimental-edge';
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    // Clear WooCommerce Session Cookies by setting them to expire immediately
-    // We need to target the specific session cookies WC uses.
-    // Since the hash/ID in the cookie name varies, we ideally need to know the exact names.
-    // However, we can try to "guess" or simply instruct the browser to clear them via header if we knew the names.
-    // Actually, identifying the exact cookie name for HTTPOnly cookies from the server side
-    // without seeing the request cookies is hard, BUT:
-    // We can read 'req.cookies' to see what cookies are being sent!
-    const cookies = req.cookies;
-    const cookiesToClear = Object.keys(cookies).filter(name =>
-        name.includes('woocommerce') ||
-        name.includes('wp_woocommerce') ||
-        name.includes('wordpress_logged_in')
+import { withRouter } from 'next/router';
+// Components
+import Layout from '@/components/Layout/Layout.component';
+import ProductList from '@/components/Product/ProductList.component';
+import client from '@/utils/apollo/ApolloClient';
+import { GET_BRAND_DATA_BY_SLUG } from '@/utils/gql/TAXONOMY_QUERIES';
+import { GetStaticProps, GetStaticPaths, InferGetStaticPropsType } from 'next';
+import Link from 'next/link';
+import BackButton from '@/components/UI/BackButton.component';
+/**
+ * Display brand page with filtering, sorting, and infinite scroll
+ */
+const BrandPage = ({
+    brandName,
+    products,
+    pageInfo,
+    slug,
+    subBrands,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+    return (
+        <Layout title={`${brandName ? brandName : 'Brand'}`} fullWidth={true}>
+            <div className="px-2 md:px-4 pt-1 pb-1">
+                <BackButton />
+                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
+                    {brandName?.toLowerCase()}
+                </h1>
+                {/* Sub-brand Chips */}
+                {subBrands && subBrands.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {subBrands.map((subBrand: any) => (
+                            <Link
+                                key={subBrand.id}
+                                href={`/brand/${subBrand.slug}`}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-[#2c3338] text-sm font-medium rounded-full transition-colors border border-gray-200 capitalize"
+                            >
+                                {subBrand.name.toLowerCase()}
+                            </Link>
+                        ))}
+                    </div>
+                )}
+                {products && products.length > 0 ? (
+                    <ProductList
+                        products={products}
+                        title={brandName || 'Products'}
+                        pageInfo={pageInfo}
+                        slug={slug}
+                        query={GET_BRAND_DATA_BY_SLUG}
+                        queryVariables={{ id: slug, slug: [slug] }}
+                    />
+                ) : (
+                    <div className="flex justify-center items-center min-h-[400px]">
+                        <p className="text-xl text-gray-500">No products found for this brand</p>
+                    </div>
+                )}
+            </div>
+        </Layout>
     );
-    const serializedCookies = cookiesToClear.map(name => {
-        return `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly; SameSite=Lax`;
-    });
-    if (serializedCookies.length > 0) {
-        res.setHeader('Set-Cookie', serializedCookies);
+};
+export default withRouter(BrandPage);
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [],
+        fallback: 'blocking',
+    };
+};
+export const getStaticProps: GetStaticProps = async ({
+    params,
+}) => {
+    const slug = params?.slug as string;
+    try {
+        const res = await client.query({
+            query: GET_BRAND_DATA_BY_SLUG,
+            variables: { id: slug, slug: [slug], after: null },
+            fetchPolicy: 'no-cache'
+        });
+        const brandData = res.data.productBrand;
+        const productsData = res.data.products;
+        const products = productsData ? productsData.nodes : [];
+        const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
+        const brandName = brandData ? brandData.name : slug;
+        const subBrands = brandData?.children?.nodes || [];
+        // Check if brand exists or has content, if strictly needed. 
+        // But for now, if data returns, we render.
+        return {
+            props: {
+                brandName: brandName as string,
+                products,
+                pageInfo,
+                slug,
+                subBrands,
+            },
+            revalidate: 60,
+        };
+    } catch (error) {
+        console.error("Error fetching brand data:", error);
+        return { notFound: true };
     }
-    res.status(200).json({ message: 'Session reset', cleared: cookiesToClear });
+};
+````
+
+## File: src/pages/product-category/[slug].tsx
+````typescript
+import React from 'react';
+import { GetServerSideProps } from 'next';
+import Layout from '@/components/Layout/Layout.component';
+import ProductList from '@/components/Product/ProductList.component';
+import client from '@/utils/apollo/ApolloClient';
+import { GET_CATEGORY_DATA_BY_SLUG } from '@/utils/gql/GQL_QUERIES';
+interface CategoryPageProps {
+    category: any;
+    products: any[];
+    pageInfo: {
+        hasNextPage: boolean;
+        endCursor: string | null;
+    };
+    slug: string;
 }
+import BackButton from '@/components/UI/BackButton.component';
+const CategoryPage = ({ category, products, pageInfo, slug }: CategoryPageProps) => {
+    return (
+        <Layout title={category?.name || 'Category'} fullWidth={true}>
+            <div className="px-2 md:px-4 pt-1 pb-1">
+                <BackButton />
+                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
+                    {category?.name?.toLowerCase()}
+                </h1>
+                {category?.description && (
+                    <div
+                        className="mb-10 text-gray-500 max-w-3xl"
+                        dangerouslySetInnerHTML={{ __html: category.description }}
+                    />
+                )}
+                <ProductList
+                    products={products}
+                    title={category?.name}
+                    pageInfo={pageInfo}
+                    slug={slug}
+                    query={GET_CATEGORY_DATA_BY_SLUG}
+                    queryVariables={{ slug, id: slug }}
+                    totalCount={category?.count}
+                />
+            </div>
+        </Layout>
+    );
+};
+export default CategoryPage;
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
+    const slug = params?.slug as string;
+    try {
+        // Cache control
+        res.setHeader(
+            'Cache-Control',
+            'public, s-maxage=60, stale-while-revalidate=59'
+        );
+        const { data } = await client.query({
+            query: GET_CATEGORY_DATA_BY_SLUG,
+            variables: { slug, id: slug },
+        });
+        if (!data?.productCategory) {
+            return { notFound: true };
+        }
+        return {
+            props: {
+                category: data.productCategory,
+                products: data.products.nodes,
+                pageInfo: data.products.pageInfo,
+                slug,
+            },
+        };
+    } catch (error) {
+        console.error('Error fetching category data:', error);
+        return {
+            notFound: true,
+        };
+    }
+};
 ````
 
 ## File: src/pages/404.tsx
@@ -21613,46 +21433,151 @@ export async function getStaticProps() {
 }
 ````
 
-## File: src/pages/categories.tsx
+## File: src/pages/products.tsx
 ````typescript
-import { NextPage, InferGetStaticPropsType, GetStaticProps } from 'next';
-import Categories from '@/components/Category/Categories.component';
+import Head from 'next/head';
 import Layout from '@/components/Layout/Layout.component';
+import ProductList from '@/components/Product/ProductList.component';
 import client from '@/utils/apollo/ApolloClient';
-import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
-/**
- * Category page displays all of the categories
- */
-const categories: NextPage = ({
-  categories,
-}: InferGetStaticPropsType<typeof getStaticProps>) => (
-  <Layout title="categories">
-    {categories && <Categories categories={categories} />}
-  </Layout>
-);
-export const runtime = 'experimental-edge';
-export default categories;
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const result = await client.query({
-      query: FETCH_ALL_CATEGORIES_QUERY,
-    });
-    return {
-      props: {
-        categories: result.data?.productCategories?.nodes || [],
-      },
-      revalidate: 60,
-    };
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return {
-      props: {
-        categories: [],
-      },
-      revalidate: 10,
-    };
-  }
+import { FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
+import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
+const Products: NextPage = ({
+  products,
+  pageInfo,
+  loading,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  if (loading)
+    return (
+      <Layout title="Products">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-xl">Loading...</div>
+        </div>
+      </Layout>
+    );
+  if (!products)
+    return (
+      <Layout title="Products">
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-red-500">No products found</p>
+        </div>
+      </Layout>
+    );
+  return (
+    <Layout title="Products" fullWidth={true}>
+      <Head>
+        <title>Products | WooCommerce Next.js</title>
+      </Head>
+      <div className="pt-1 pb-1">
+        <ProductList
+          products={products}
+          title="All Products"
+          pageInfo={pageInfo}
+          query={FETCH_ALL_PRODUCTS_QUERY}
+        />
+      </div>
+    </Layout>
+  );
 };
+export default Products;
+export const getStaticProps: GetStaticProps = async () => {
+  const { data, loading, networkStatus } = await client.query({
+    query: FETCH_ALL_PRODUCTS_QUERY,
+  });
+  return {
+    props: {
+      products: data.products.nodes,
+      pageInfo: data.products.pageInfo,
+      loading,
+      networkStatus,
+    },
+    revalidate: 60,
+  };
+};
+````
+
+## File: package.json
+````json
+{
+  "name": "shopwice",
+  "version": "1.2.4",
+  "private": true,
+  "scripts": {
+    "lhci": "lhci autorun",
+    "lhci:perf": "lhci autorun --collect.settings.preset=perf",
+    "lhci:desktop": "lhci autorun --collect.settings.preset=desktop",
+    "dev": "next dev --turbopack",
+    "pages:build": "npx @opennextjs/cloudflare",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json}\"",
+    "playwright": "npx playwright test",
+    "playwright:ui": "npx playwright test --ui",
+    "playwright:debug": "npx playwright test --debug",
+    "playwright:codegen": "playwright codegen",
+    "refresh": "rm -rf node_modules && rm package-lock.json && npm i && npm run format",
+    "generate-reviews": "node scripts/generate-reviews.js",
+    "postbuild": "next-sitemap"
+  },
+  "keywords": [
+    "next.js",
+    "next",
+    "javascript",
+    "framer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/client": "^3.12.0",
+    "@react-google-maps/api": "^2.20.8",
+    "@react-oauth/google": "^0.13.4",
+    "@types/react": "^19.2.7",
+    "@types/react-facebook-login": "^4.1.11",
+    "autoprefixer": "^10.4.23",
+    "graphql": "^16.12.0",
+    "isomorphic-dompurify": "^2.35.0",
+    "lodash": "^4.17.21",
+    "motion": "^12.23.26",
+    "next": "16.1.1",
+    "next-seo": "^6.6.0",
+    "next-sitemap": "^4.2.3",
+    "node-fetch": "^3.3.2",
+    "nprogress": "^0.2.0",
+    "postcss": "^8.5.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-facebook-login": "^4.1.1",
+    "react-hook-form": "^7.69.0",
+    "use-places-autocomplete": "^4.0.1",
+    "uuid": "^13.0.0",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "latest",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.57.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/google.maps": "^3.58.1",
+    "@types/lodash": "^4.17.21",
+    "@types/node": "24.10.4",
+    "@types/nprogress": "^0.2.3",
+    "@types/react-dom": "^19.2.3",
+    "@types/uuid": "^11.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "babel-plugin-styled-components": "^2.1.4",
+    "eslint-config-next": "^16.1.1",
+    "postcss-preset-env": "^10.5.0",
+    "prettier": "^3.7.4",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "maintained node versions"
+  ]
+}
 ````
 
 ## File: src/components/Product/ProductReviewsREST.component.tsx
@@ -21923,6 +21848,74 @@ const RecentRefurbishedReviews = () => {
 export default RecentRefurbishedReviews;
 ````
 
+## File: src/pages/api/reset-session.ts
+````typescript
+import type { NextApiRequest, NextApiResponse } from 'next';
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+    // Clear WooCommerce Session Cookies by setting them to expire immediately
+    // We need to target the specific session cookies WC uses.
+    // Since the hash/ID in the cookie name varies, we ideally need to know the exact names.
+    // However, we can try to "guess" or simply instruct the browser to clear them via header if we knew the names.
+    // Actually, identifying the exact cookie name for HTTPOnly cookies from the server side
+    // without seeing the request cookies is hard, BUT:
+    // We can read 'req.cookies' to see what cookies are being sent!
+    const cookies = req.cookies;
+    const cookiesToClear = Object.keys(cookies).filter(name =>
+        name.includes('woocommerce') ||
+        name.includes('wp_woocommerce') ||
+        name.includes('wordpress_logged_in')
+    );
+    const serializedCookies = cookiesToClear.map(name => {
+        return `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly; SameSite=Lax`;
+    });
+    if (serializedCookies.length > 0) {
+        res.setHeader('Set-Cookie', serializedCookies);
+    }
+    res.status(200).json({ message: 'Session reset', cleared: cookiesToClear });
+}
+````
+
+## File: src/pages/categories.tsx
+````typescript
+import { NextPage, InferGetStaticPropsType, GetStaticProps } from 'next';
+import Categories from '@/components/Category/Categories.component';
+import Layout from '@/components/Layout/Layout.component';
+import client from '@/utils/apollo/ApolloClient';
+import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
+/**
+ * Category page displays all of the categories
+ */
+const categories: NextPage = ({
+  categories,
+}: InferGetStaticPropsType<typeof getStaticProps>) => (
+  <Layout title="categories">
+    {categories && <Categories categories={categories} />}
+  </Layout>
+);
+export default categories;
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const result = await client.query({
+      query: FETCH_ALL_CATEGORIES_QUERY,
+    });
+    return {
+      props: {
+        categories: result.data?.productCategories?.nodes || [],
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return {
+      props: {
+        categories: [],
+      },
+      revalidate: 10,
+    };
+  }
+};
+````
+
 ## File: src/pages/product/[slug].tsx
 ````typescript
 // Imports - Updated Layout
@@ -22045,7 +22038,6 @@ const product: NextPage = ({
     </>
   );
 };
-export const runtime = 'experimental-edge';
 export default withRouter(product);
 export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
   try {
@@ -22091,137 +22083,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params, res }) =>
   } catch (error) {
     console.error(error);
     return { notFound: true };
-  }
-};
-````
-
-## File: src/pages/index.tsx
-````typescript
-import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import Hero from '@/components/Index/Hero.component';
-import FeaturedCategories from '@/components/Index/FeaturedCategories.component';
-// Dynamic Imports for below-the-fold content
-import WhyChooseUs from '@/components/Index/WhyChooseUs.component';
-import PromoBoxes from '@/components/Index/PromoBoxes.component';
-import InfoBanner from '@/components/Index/InfoBanner.component';
-import SEOContent from '@/components/Index/SEOContent.component';
-import Newsletter from '@/components/Index/Newsletter.component';
-import TopRatedProducts from '@/components/Index/TopRatedProducts.component';
-import AirConditionerProducts from '@/components/Index/AirConditionerProducts.component';
-import MobilePhonesOnSale from '@/components/Index/MobilePhonesOnSale.component';
-import LaptopsProducts from '@/components/Index/LaptopsProducts.component';
-import SpeakersProducts from '@/components/Index/SpeakersProducts.component';
-import TelevisionsProducts from '@/components/Index/TelevisionsProducts.component';
-import BestSellingSlider from '@/components/Index/BestSellingSlider.component';
-import Layout from '@/components/Layout/Layout.component';
-// Utilities
-import client from '@/utils/apollo/ApolloClient';
-// Types
-import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
-// GraphQL
-import { FETCH_HOME_PAGE_DATA } from '@/utils/gql/GQL_QUERIES';
-import { useGlobalStore } from '@/stores/globalStore';
-import { useEffect } from 'react';
-/**
- * Main index page
- * @function Index
- * @param {InferGetStaticPropsType<typeof getStaticProps>} products
- * @returns {JSX.Element} - Rendered component
- */
-const Index: NextPage = ({
-  topRatedProducts: initialTopRated,
-  bestSellingProducts: initialBestSelling,
-  airConditionerProducts: initialAir,
-  mobilePhonesOnSale: initialMobile,
-  laptopsProducts: initialLaptops,
-  speakersProducts: initialSpeakers,
-  televisionsProducts: initialTelevisions,
-  promoProduct: initialPromo,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
-  const setHomeData = useGlobalStore((state) => state.setHomeData);
-  const homeData = useGlobalStore((state) => state.homeData);
-  // If props are empty (build error), fallback to cached data from store
-  const topRatedProducts = initialTopRated?.length > 0 ? initialTopRated : (homeData.topRatedProducts || []);
-  const bestSellingProducts = initialBestSelling?.length > 0 ? initialBestSelling : (homeData.bestSellingProducts || []);
-  const airConditionerProducts = initialAir?.length > 0 ? initialAir : (homeData.airConditionerProducts || []);
-  const mobilePhonesOnSale = initialMobile?.length > 0 ? initialMobile : (homeData.mobilePhonesOnSale || []);
-  const laptopsProducts = initialLaptops?.length > 0 ? initialLaptops : (homeData.laptopsProducts || []);
-  const speakersProducts = initialSpeakers?.length > 0 ? initialSpeakers : (homeData.speakersProducts || []);
-  const televisionsProducts = initialTelevisions?.length > 0 ? initialTelevisions : (homeData.televisionsProducts || []);
-  const promoProduct = initialPromo || homeData.promoProduct;
-  console.log('[Index] initialTopRated:', initialTopRated?.length, initialTopRated?.[0]);
-  useEffect(() => {
-    if (initialTopRated?.length > 0) {
-      setHomeData({
-        topRatedProducts: initialTopRated,
-        bestSellingProducts: initialBestSelling,
-        airConditionerProducts: initialAir,
-        mobilePhonesOnSale: initialMobile,
-        laptopsProducts: initialLaptops,
-        speakersProducts: initialSpeakers,
-        televisionsProducts: initialTelevisions,
-        promoProduct: initialPromo
-      });
-    }
-  }, [initialTopRated, initialBestSelling, initialAir, initialMobile, initialLaptops, initialSpeakers, initialTelevisions, initialPromo, setHomeData]);
-  return (
-    <Layout title="Shop Online In Ghana | Shopwice" fullWidth={true}>
-      <div className="bg-[#F8F8F8]">
-        <Hero />
-        <FeaturedCategories />
-        <TopRatedProducts products={topRatedProducts} />
-        <AirConditionerProducts products={airConditionerProducts} />
-        <MobilePhonesOnSale products={mobilePhonesOnSale} />
-        <LaptopsProducts products={laptopsProducts} />
-        <SpeakersProducts products={speakersProducts} />
-        <TelevisionsProducts products={televisionsProducts} />
-        <WhyChooseUs />
-        <PromoBoxes promoProduct={promoProduct} />
-        <BestSellingSlider products={bestSellingProducts} />
-        <InfoBanner />
-        <SEOContent />
-        <Newsletter />
-      </div>
-    </Layout>
-  );
-};
-export const config = { runtime: 'experimental-edge' };
-export default Index;
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const { data } = await client.query({
-      query: FETCH_HOME_PAGE_DATA,
-      variables: { promoProductSlug: "microsoft-xbox-x-wireless-controller" }
-    });
-    return {
-      props: {
-        topRatedProducts: data?.topRatedProducts?.nodes || [],
-        bestSellingProducts: data?.bestSellingProducts?.nodes || [],
-        airConditionerProducts: data?.airConditionerProducts?.nodes || [],
-        mobilePhonesOnSale: data?.mobilePhonesOnSale?.nodes || [],
-        laptopsProducts: data?.laptopsProducts?.nodes || [],
-        speakersProducts: data?.speakersProducts?.nodes || [],
-        televisionsProducts: data?.televisionsProducts?.nodes || [],
-        promoProduct: data?.promoProduct || null,
-      },
-      revalidate: 60,
-    };
-  } catch (error) {
-    console.error('Error in getStaticProps:', error);
-    return {
-      props: {
-        topRatedProducts: [],
-        bestSellingProducts: [],
-        airConditionerProducts: [],
-        mobilePhonesOnSale: [],
-        laptopsProducts: [],
-        speakersProducts: [],
-        televisionsProducts: [],
-        promoProduct: null,
-      },
-      revalidate: 10,
-    };
   }
 };
 ````
@@ -22335,6 +22196,136 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 export default client;
+````
+
+## File: src/pages/index.tsx
+````typescript
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import Hero from '@/components/Index/Hero.component';
+import FeaturedCategories from '@/components/Index/FeaturedCategories.component';
+// Dynamic Imports for below-the-fold content
+import WhyChooseUs from '@/components/Index/WhyChooseUs.component';
+import PromoBoxes from '@/components/Index/PromoBoxes.component';
+import InfoBanner from '@/components/Index/InfoBanner.component';
+import SEOContent from '@/components/Index/SEOContent.component';
+import Newsletter from '@/components/Index/Newsletter.component';
+import TopRatedProducts from '@/components/Index/TopRatedProducts.component';
+import AirConditionerProducts from '@/components/Index/AirConditionerProducts.component';
+import MobilePhonesOnSale from '@/components/Index/MobilePhonesOnSale.component';
+import LaptopsProducts from '@/components/Index/LaptopsProducts.component';
+import SpeakersProducts from '@/components/Index/SpeakersProducts.component';
+import TelevisionsProducts from '@/components/Index/TelevisionsProducts.component';
+import BestSellingSlider from '@/components/Index/BestSellingSlider.component';
+import Layout from '@/components/Layout/Layout.component';
+// Utilities
+import client from '@/utils/apollo/ApolloClient';
+// Types
+import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
+// GraphQL
+import { FETCH_HOME_PAGE_DATA } from '@/utils/gql/GQL_QUERIES';
+import { useGlobalStore } from '@/stores/globalStore';
+import { useEffect } from 'react';
+/**
+ * Main index page
+ * @function Index
+ * @param {InferGetStaticPropsType<typeof getStaticProps>} products
+ * @returns {JSX.Element} - Rendered component
+ */
+const Index: NextPage = ({
+  topRatedProducts: initialTopRated,
+  bestSellingProducts: initialBestSelling,
+  airConditionerProducts: initialAir,
+  mobilePhonesOnSale: initialMobile,
+  laptopsProducts: initialLaptops,
+  speakersProducts: initialSpeakers,
+  televisionsProducts: initialTelevisions,
+  promoProduct: initialPromo,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const setHomeData = useGlobalStore((state) => state.setHomeData);
+  const homeData = useGlobalStore((state) => state.homeData);
+  // If props are empty (build error), fallback to cached data from store
+  const topRatedProducts = initialTopRated?.length > 0 ? initialTopRated : (homeData.topRatedProducts || []);
+  const bestSellingProducts = initialBestSelling?.length > 0 ? initialBestSelling : (homeData.bestSellingProducts || []);
+  const airConditionerProducts = initialAir?.length > 0 ? initialAir : (homeData.airConditionerProducts || []);
+  const mobilePhonesOnSale = initialMobile?.length > 0 ? initialMobile : (homeData.mobilePhonesOnSale || []);
+  const laptopsProducts = initialLaptops?.length > 0 ? initialLaptops : (homeData.laptopsProducts || []);
+  const speakersProducts = initialSpeakers?.length > 0 ? initialSpeakers : (homeData.speakersProducts || []);
+  const televisionsProducts = initialTelevisions?.length > 0 ? initialTelevisions : (homeData.televisionsProducts || []);
+  const promoProduct = initialPromo || homeData.promoProduct;
+  console.log('[Index] initialTopRated:', initialTopRated?.length, initialTopRated?.[0]);
+  useEffect(() => {
+    if (initialTopRated?.length > 0) {
+      setHomeData({
+        topRatedProducts: initialTopRated,
+        bestSellingProducts: initialBestSelling,
+        airConditionerProducts: initialAir,
+        mobilePhonesOnSale: initialMobile,
+        laptopsProducts: initialLaptops,
+        speakersProducts: initialSpeakers,
+        televisionsProducts: initialTelevisions,
+        promoProduct: initialPromo
+      });
+    }
+  }, [initialTopRated, initialBestSelling, initialAir, initialMobile, initialLaptops, initialSpeakers, initialTelevisions, initialPromo, setHomeData]);
+  return (
+    <Layout title="Shop Online In Ghana | Shopwice" fullWidth={true}>
+      <div className="bg-[#F8F8F8]">
+        <Hero />
+        <FeaturedCategories />
+        <TopRatedProducts products={topRatedProducts} />
+        <AirConditionerProducts products={airConditionerProducts} />
+        <MobilePhonesOnSale products={mobilePhonesOnSale} />
+        <LaptopsProducts products={laptopsProducts} />
+        <SpeakersProducts products={speakersProducts} />
+        <TelevisionsProducts products={televisionsProducts} />
+        <WhyChooseUs />
+        <PromoBoxes promoProduct={promoProduct} />
+        <BestSellingSlider products={bestSellingProducts} />
+        <InfoBanner />
+        <SEOContent />
+        <Newsletter />
+      </div>
+    </Layout>
+  );
+};
+export default Index;
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const { data } = await client.query({
+      query: FETCH_HOME_PAGE_DATA,
+      variables: { promoProductSlug: "microsoft-xbox-x-wireless-controller" }
+    });
+    return {
+      props: {
+        topRatedProducts: data?.topRatedProducts?.nodes || [],
+        bestSellingProducts: data?.bestSellingProducts?.nodes || [],
+        airConditionerProducts: data?.airConditionerProducts?.nodes || [],
+        mobilePhonesOnSale: data?.mobilePhonesOnSale?.nodes || [],
+        laptopsProducts: data?.laptopsProducts?.nodes || [],
+        speakersProducts: data?.speakersProducts?.nodes || [],
+        televisionsProducts: data?.televisionsProducts?.nodes || [],
+        promoProduct: data?.promoProduct || null,
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error in getStaticProps:', error);
+    return {
+      props: {
+        topRatedProducts: [],
+        bestSellingProducts: [],
+        airConditionerProducts: [],
+        mobilePhonesOnSale: [],
+        laptopsProducts: [],
+        speakersProducts: [],
+        televisionsProducts: [],
+        promoProduct: null,
+      },
+      revalidate: 10,
+    };
+  }
+};
 ````
 
 ## File: src/components/Product/RecentRefurbishedReviewsREST.component.tsx
