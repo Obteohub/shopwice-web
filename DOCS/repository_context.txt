@@ -237,8 +237,6 @@ src/
 .prettierrc
 check_pagination_support.js
 CLOUDFLARE_DEPLOY.md
-CODE_OF_CONDUCT.md
-CONTRIBUTING.md
 debug_output.txt
 debug_reviews.js
 deploy.sh
@@ -4040,108 +4038,6 @@ export const useProductFilters = (products: Product[]) => {
 };
 ````
 
-## File: src/pages/brand/[slug].tsx
-````typescript
-import { withRouter } from 'next/router';
-// Components
-import Layout from '@/components/Layout/Layout.component';
-import ProductList from '@/components/Product/ProductList.component';
-import client from '@/utils/apollo/ApolloClient';
-import { GET_BRAND_DATA_BY_SLUG } from '@/utils/gql/TAXONOMY_QUERIES';
-import { GetStaticProps, GetStaticPaths, InferGetStaticPropsType } from 'next';
-import Link from 'next/link';
-import BackButton from '@/components/UI/BackButton.component';
-/**
- * Display brand page with filtering, sorting, and infinite scroll
- */
-const BrandPage = ({
-    brandName,
-    products,
-    pageInfo,
-    slug,
-    subBrands,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
-    return (
-        <Layout title={`${brandName ? brandName : 'Brand'}`} fullWidth={true}>
-            <div className="px-2 md:px-4 pt-1 pb-1">
-                <BackButton />
-                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
-                    {brandName?.toLowerCase()}
-                </h1>
-                {/* Sub-brand Chips */}
-                {subBrands && subBrands.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {subBrands.map((subBrand: any) => (
-                            <Link
-                                key={subBrand.id}
-                                href={`/brand/${subBrand.slug}`}
-                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-[#2c3338] text-sm font-medium rounded-full transition-colors border border-gray-200 capitalize"
-                            >
-                                {subBrand.name.toLowerCase()}
-                            </Link>
-                        ))}
-                    </div>
-                )}
-                {products && products.length > 0 ? (
-                    <ProductList
-                        products={products}
-                        title={brandName || 'Products'}
-                        pageInfo={pageInfo}
-                        slug={slug}
-                        query={GET_BRAND_DATA_BY_SLUG}
-                        queryVariables={{ id: slug, slug: [slug] }}
-                    />
-                ) : (
-                    <div className="flex justify-center items-center min-h-[400px]">
-                        <p className="text-xl text-gray-500">No products found for this brand</p>
-                    </div>
-                )}
-            </div>
-        </Layout>
-    );
-};
-export default withRouter(BrandPage);
-export const getStaticPaths: GetStaticPaths = async () => {
-    return {
-        paths: [],
-        fallback: 'blocking',
-    };
-};
-export const getStaticProps: GetStaticProps = async ({
-    params,
-}) => {
-    const slug = params?.slug as string;
-    try {
-        const res = await client.query({
-            query: GET_BRAND_DATA_BY_SLUG,
-            variables: { id: slug, slug: [slug], after: null },
-            fetchPolicy: 'no-cache'
-        });
-        const brandData = res.data.productBrand;
-        const productsData = res.data.products;
-        const products = productsData ? productsData.nodes : [];
-        const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
-        const brandName = brandData ? brandData.name : slug;
-        const subBrands = brandData?.children?.nodes || [];
-        // Check if brand exists or has content, if strictly needed. 
-        // But for now, if data returns, we render.
-        return {
-            props: {
-                brandName: brandName as string,
-                products,
-                pageInfo,
-                slug,
-                subBrands,
-            },
-            revalidate: 60,
-        };
-    } catch (error) {
-        console.error("Error fetching brand data:", error);
-        return { notFound: true };
-    }
-};
-````
-
 ## File: src/pages/location/[slug].tsx
 ````typescript
 import { withRouter } from 'next/router';
@@ -4289,68 +4185,6 @@ const CustomerAccountPage: NextPage = () => {
   );
 };
 export default withAuth(CustomerAccountPage);
-````
-
-## File: src/pages/products.tsx
-````typescript
-import Head from 'next/head';
-import Layout from '@/components/Layout/Layout.component';
-import ProductList from '@/components/Product/ProductList.component';
-import client from '@/utils/apollo/ApolloClient';
-import { FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
-import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
-const Products: NextPage = ({
-  products,
-  pageInfo,
-  loading,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
-  if (loading)
-    return (
-      <Layout title="Products">
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="text-xl">Loading...</div>
-        </div>
-      </Layout>
-    );
-  if (!products)
-    return (
-      <Layout title="Products">
-        <div className="flex justify-center items-center min-h-screen">
-          <p className="text-red-500">No products found</p>
-        </div>
-      </Layout>
-    );
-  return (
-    <Layout title="Products" fullWidth={true}>
-      <Head>
-        <title>Products | WooCommerce Next.js</title>
-      </Head>
-      <div className="pt-1 pb-1">
-        <ProductList
-          products={products}
-          title="All Products"
-          pageInfo={pageInfo}
-          query={FETCH_ALL_PRODUCTS_QUERY}
-        />
-      </div>
-    </Layout>
-  );
-};
-export default Products;
-export const getStaticProps: GetStaticProps = async () => {
-  const { data, loading, networkStatus } = await client.query({
-    query: FETCH_ALL_PRODUCTS_QUERY,
-  });
-  return {
-    props: {
-      products: data.products.nodes,
-      pageInfo: data.products.pageInfo,
-      loading,
-      networkStatus,
-    },
-    revalidate: 60,
-  };
-};
 ````
 
 ## File: src/pages/refurbished-policy.tsx
@@ -5702,183 +5536,6 @@ async function test() {
     }
 }
 test();
-````
-
-## File: CODE_OF_CONDUCT.md
-````markdown
-# Contributor Covenant Code of Conduct
-
-## Our Pledge
-
-In the interest of fostering an open and welcoming environment, we as
-contributors and maintainers pledge to making participation in our project and
-our community a harassment-free experience for everyone, regardless of age, body
-size, disability, ethnicity, sex characteristics, gender identity and expression,
-level of experience, education, socio-economic status, nationality, personal
-appearance, race, religion, or sexual identity and orientation.
-
-## Our Standards
-
-Examples of behavior that contributes to creating a positive environment
-include:
-
--   Using welcoming and inclusive language
--   Being respectful of differing viewpoints and experiences
--   Gracefully accepting constructive criticism
--   Focusing on what is best for the community
--   Showing empathy towards other community members
-
-Examples of unacceptable behavior by participants include:
-
--   The use of sexualized language or imagery and unwelcome sexual attention or
-    advances
--   Trolling, insulting/derogatory comments, and personal or political attacks
--   Public or private harassment
--   Publishing others' private information, such as a physical or electronic
-    address, without explicit permission
--   Other conduct which could reasonably be considered inappropriate in a
-    professional setting
-
-## Our Responsibilities
-
-Project maintainers are responsible for clarifying the standards of acceptable
-behavior and are expected to take appropriate and fair corrective action in
-response to any instances of unacceptable behavior.
-
-Project maintainers have the right and responsibility to remove, edit, or
-reject comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, or to ban temporarily or
-permanently any contributor for other behaviors that they deem inappropriate,
-threatening, offensive, or harmful.
-
-## Scope
-
-This Code of Conduct applies both within project spaces and in public spaces
-when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
-address, posting via an official social media account, or acting as an appointed
-representative at an online or offline event. Representation of a project may be
-further defined and clarified by project maintainers.
-
-## Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at . All
-complaints will be reviewed and investigated and will result in a response that
-is deemed necessary and appropriate to the circumstances. The project team is
-obligated to maintain confidentiality with regard to the reporter of an incident.
-Further details of specific enforcement policies may be posted separately.
-
-Project maintainers who do not follow or enforce the Code of Conduct in good
-faith may face temporary or permanent repercussions as determined by other
-members of the project's leadership.
-
-## Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
-available at <https://www.contributor-covenant.org/version/1/4/code-of-conduct.html>
-
-[homepage]: https://www.contributor-covenant.org
-
-For answers to common questions about this code of conduct, see
-<https://www.contributor-covenant.org/faq>
-````
-
-## File: CONTRIBUTING.md
-````markdown
-# Contributing
-
-When contributing to this repository, please first discuss the change you wish to make via issue,
-email, or any other method with the owners of this repository before making a change. 
-
-Please note we have a code of conduct, please follow it in all your interactions with the project.
-
-## Pull Request Process
-
-1.  Ensure any install or build dependencies are removed before the end of the layer when doing a 
-    build.
-2.  Update the README.md with details of changes to the interface, this includes new environment 
-    variables, exposed ports, useful file locations and container parameters.
-3.  Increase the version numbers in any examples files and the README.md to the new version that this
-    Pull Request would represent. The versioning scheme we use is [SemVer](http://semver.org/).
-4.  You may merge the Pull Request in once you have the sign-off of two other developers, or if you 
-    do not have permission to do that, you may request the second reviewer to merge it for you.
-
-## Code of Conduct
-
-### Our Pledge
-
-In the interest of fostering an open and welcoming environment, we as
-contributors and maintainers pledge to making participation in our project and
-our community a harassment-free experience for everyone, regardless of age, body
-size, disability, ethnicity, gender identity and expression, level of experience,
-nationality, personal appearance, race, religion, or sexual identity and
-orientation.
-
-### Our Standards
-
-Examples of behavior that contributes to creating a positive environment
-include:
-
--   Using welcoming and inclusive language
--   Being respectful of differing viewpoints and experiences
--   Gracefully accepting constructive criticism
--   Focusing on what is best for the community
--   Showing empathy towards other community members
-
-Examples of unacceptable behavior by participants include:
-
--   The use of sexualized language or imagery and unwelcome sexual attention or
-    advances
--   Trolling, insulting/derogatory comments, and personal or political attacks
--   Public or private harassment
--   Publishing others' private information, such as a physical or electronic
-    address, without explicit permission
--   Other conduct which could reasonably be considered inappropriate in a
-    professional setting
-
-### Our Responsibilities
-
-Project maintainers are responsible for clarifying the standards of acceptable
-behavior and are expected to take appropriate and fair corrective action in
-response to any instances of unacceptable behavior.
-
-Project maintainers have the right and responsibility to remove, edit, or
-reject comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, or to ban temporarily or
-permanently any contributor for other behaviors that they deem inappropriate,
-threatening, offensive, or harmful.
-
-### Scope
-
-This Code of Conduct applies both within project spaces and in public spaces
-when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
-address, posting via an official social media account, or acting as an appointed
-representative at an online or offline event. Representation of a project may be
-further defined and clarified by project maintainers.
-
-### Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at [INSERT EMAIL ADDRESS]. All
-complaints will be reviewed and investigated and will result in a response that
-is deemed necessary and appropriate to the circumstances. The project team is
-obligated to maintain confidentiality with regard to the reporter of an incident.
-Further details of specific enforcement policies may be posted separately.
-
-Project maintainers who do not follow or enforce the Code of Conduct in good
-faith may face temporary or permanent repercussions as determined by other
-members of the project's leadership.
-
-### Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
-available at [http://contributor-covenant.org/version/1/4][version]
-
-[homepage]: http://contributor-covenant.org
-
-[version]: http://contributor-covenant.org/version/1/4/
 ````
 
 ## File: deploy.sh
@@ -10764,33 +10421,6 @@ export const useCollectionData = () => {
 };
 ````
 
-## File: src/pages/api/reset-session.ts
-````typescript
-import type { NextApiRequest, NextApiResponse } from 'next';
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    // Clear WooCommerce Session Cookies by setting them to expire immediately
-    // We need to target the specific session cookies WC uses.
-    // Since the hash/ID in the cookie name varies, we ideally need to know the exact names.
-    // However, we can try to "guess" or simply instruct the browser to clear them via header if we knew the names.
-    // Actually, identifying the exact cookie name for HTTPOnly cookies from the server side
-    // without seeing the request cookies is hard, BUT:
-    // We can read 'req.cookies' to see what cookies are being sent!
-    const cookies = req.cookies;
-    const cookiesToClear = Object.keys(cookies).filter(name =>
-        name.includes('woocommerce') ||
-        name.includes('wp_woocommerce') ||
-        name.includes('wordpress_logged_in')
-    );
-    const serializedCookies = cookiesToClear.map(name => {
-        return `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly; SameSite=Lax`;
-    });
-    if (serializedCookies.length > 0) {
-        res.setHeader('Set-Cookie', serializedCookies);
-    }
-    res.status(200).json({ message: 'Session reset', cleared: cookiesToClear });
-}
-````
-
 ## File: src/pages/product-category/[slug].tsx
 ````typescript
 import React from 'react';
@@ -10940,47 +10570,6 @@ export default function CartPage() {
     </Layout>
   );
 }
-````
-
-## File: src/pages/categories.tsx
-````typescript
-import { NextPage, InferGetStaticPropsType, GetStaticProps } from 'next';
-import Categories from '@/components/Category/Categories.component';
-import Layout from '@/components/Layout/Layout.component';
-import client from '@/utils/apollo/ApolloClient';
-import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
-/**
- * Category page displays all of the categories
- */
-const categories: NextPage = ({
-  categories,
-}: InferGetStaticPropsType<typeof getStaticProps>) => (
-  <Layout title="categories">
-    {categories && <Categories categories={categories} />}
-  </Layout>
-);
-export default categories;
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const result = await client.query({
-      query: FETCH_ALL_CATEGORIES_QUERY,
-    });
-    return {
-      props: {
-        categories: result.data?.productCategories?.nodes || [],
-      },
-      revalidate: 60,
-    };
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return {
-      props: {
-        categories: [],
-      },
-      revalidate: 10,
-    };
-  }
-};
 ````
 
 ## File: src/pages/shoes.tsx
@@ -11931,32 +11520,6 @@ export async function logout() {
     window.location.href = '/login';
   }
 }
-````
-
-## File: CLOUDFLARE_DEPLOY.md
-````markdown
-# Deploying to Cloudflare Pages
-
-1. **Commit & Push**: Ensure all changes (including `package.json` and `next.config.js`) are pushed to your git repository.
-
-2. **Cloudflare Dashboard**:
-   - Go to Cloudflare Pages.
-   - "Connect to Git" and select this repository.
-
-3. **Build Settings**:
-   - **Framework Preset**: `Next.js`
-   - **Build Command**: `npx @cloudflare/next-on-pages` (or `npm run pages:build`)
-   - **Output Directory**: `.vercel/output/static` (Important: next-on-pages outputs here)
-   - **Node Version**: Set an Environment Variable `NODE_VERSION` to `20` (or compatible).
-
-4. **Environment Variables**:
-   - Add all your `.env` variables (e.g., `NEXT_PUBLIC_GRAPHQL_URL`, `NEXT_PUBLIC_REST_API_URL`, etc.) to the Cloudflare Pages settings.
-
-5. **Deploy**: Click "Save and Deploy".
-
-## Important Notes
-- **Images**: We have disabled Next.js Image Optimization (`unoptimized: true`) in `next.config.js`. Images will work but won't be auto-optimized by the server. To optimize, use Cloudflare's Image Resizing service or a third-party loader (Cloudinary, Imgix).
-- **Edge Runtime**: The API routes and `getServerSideProps` will run on Cloudflare Workers (Edge). Ensure no Node.js-only modules are used in these paths.
 ````
 
 ## File: debug_output.txt
@@ -19797,6 +19360,137 @@ const GlobalInitializer = () => {
 export default GlobalInitializer;
 ````
 
+## File: src/pages/api/reset-session.ts
+````typescript
+import type { NextApiRequest, NextApiResponse } from 'next';
+export const runtime = 'edge';
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
+    // Clear WooCommerce Session Cookies by setting them to expire immediately
+    // We need to target the specific session cookies WC uses.
+    // Since the hash/ID in the cookie name varies, we ideally need to know the exact names.
+    // However, we can try to "guess" or simply instruct the browser to clear them via header if we knew the names.
+    // Actually, identifying the exact cookie name for HTTPOnly cookies from the server side
+    // without seeing the request cookies is hard, BUT:
+    // We can read 'req.cookies' to see what cookies are being sent!
+    const cookies = req.cookies;
+    const cookiesToClear = Object.keys(cookies).filter(name =>
+        name.includes('woocommerce') ||
+        name.includes('wp_woocommerce') ||
+        name.includes('wordpress_logged_in')
+    );
+    const serializedCookies = cookiesToClear.map(name => {
+        return `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly; SameSite=Lax`;
+    });
+    if (serializedCookies.length > 0) {
+        res.setHeader('Set-Cookie', serializedCookies);
+    }
+    res.status(200).json({ message: 'Session reset', cleared: cookiesToClear });
+}
+````
+
+## File: src/pages/brand/[slug].tsx
+````typescript
+import { withRouter } from 'next/router';
+// Components
+import Layout from '@/components/Layout/Layout.component';
+import ProductList from '@/components/Product/ProductList.component';
+import client from '@/utils/apollo/ApolloClient';
+import { GET_BRAND_DATA_BY_SLUG } from '@/utils/gql/TAXONOMY_QUERIES';
+import { GetStaticProps, GetStaticPaths, InferGetStaticPropsType } from 'next';
+import Link from 'next/link';
+import BackButton from '@/components/UI/BackButton.component';
+/**
+ * Display brand page with filtering, sorting, and infinite scroll
+ */
+const BrandPage = ({
+    brandName,
+    products,
+    pageInfo,
+    slug,
+    subBrands,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+    return (
+        <Layout title={`${brandName ? brandName : 'Brand'}`} fullWidth={true}>
+            <div className="px-2 md:px-4 pt-1 pb-1">
+                <BackButton />
+                <h1 className="text-[22px] font-bold text-[#2c3338] mb-1 capitalize tracking-tight">
+                    {brandName?.toLowerCase()}
+                </h1>
+                {/* Sub-brand Chips */}
+                {subBrands && subBrands.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {subBrands.map((subBrand: any) => (
+                            <Link
+                                key={subBrand.id}
+                                href={`/brand/${subBrand.slug}`}
+                                className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-[#2c3338] text-sm font-medium rounded-full transition-colors border border-gray-200 capitalize"
+                            >
+                                {subBrand.name.toLowerCase()}
+                            </Link>
+                        ))}
+                    </div>
+                )}
+                {products && products.length > 0 ? (
+                    <ProductList
+                        products={products}
+                        title={brandName || 'Products'}
+                        pageInfo={pageInfo}
+                        slug={slug}
+                        query={GET_BRAND_DATA_BY_SLUG}
+                        queryVariables={{ id: slug, slug: [slug] }}
+                    />
+                ) : (
+                    <div className="flex justify-center items-center min-h-[400px]">
+                        <p className="text-xl text-gray-500">No products found for this brand</p>
+                    </div>
+                )}
+            </div>
+        </Layout>
+    );
+};
+export const runtime = 'experimental-edge';
+export default withRouter(BrandPage);
+export const getStaticPaths: GetStaticPaths = async () => {
+    return {
+        paths: [],
+        fallback: 'blocking',
+    };
+};
+export const getStaticProps: GetStaticProps = async ({
+    params,
+}) => {
+    const slug = params?.slug as string;
+    try {
+        const res = await client.query({
+            query: GET_BRAND_DATA_BY_SLUG,
+            variables: { id: slug, slug: [slug], after: null },
+            fetchPolicy: 'no-cache'
+        });
+        const brandData = res.data.productBrand;
+        const productsData = res.data.products;
+        const products = productsData ? productsData.nodes : [];
+        const pageInfo = productsData ? productsData.pageInfo : { hasNextPage: false, endCursor: null };
+        const brandName = brandData ? brandData.name : slug;
+        const subBrands = brandData?.children?.nodes || [];
+        // Check if brand exists or has content, if strictly needed. 
+        // But for now, if data returns, we render.
+        return {
+            props: {
+                brandName: brandName as string,
+                products,
+                pageInfo,
+                slug,
+                subBrands,
+            },
+            revalidate: 60,
+        };
+    } catch (error) {
+        console.error("Error fetching brand data:", error);
+        return { notFound: true };
+    }
+};
+````
+
 ## File: src/pages/404.tsx
 ````typescript
 import Link from 'next/link';
@@ -19896,6 +19590,69 @@ export async function getStaticProps() {
         };
     }
 }
+````
+
+## File: src/pages/products.tsx
+````typescript
+import Head from 'next/head';
+import Layout from '@/components/Layout/Layout.component';
+import ProductList from '@/components/Product/ProductList.component';
+import client from '@/utils/apollo/ApolloClient';
+import { FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
+import type { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next';
+const Products: NextPage = ({
+  products,
+  pageInfo,
+  loading,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
+  if (loading)
+    return (
+      <Layout title="Products">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-xl">Loading...</div>
+        </div>
+      </Layout>
+    );
+  if (!products)
+    return (
+      <Layout title="Products">
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-red-500">No products found</p>
+        </div>
+      </Layout>
+    );
+  return (
+    <Layout title="Products" fullWidth={true}>
+      <Head>
+        <title>Products | WooCommerce Next.js</title>
+      </Head>
+      <div className="pt-1 pb-1">
+        <ProductList
+          products={products}
+          title="All Products"
+          pageInfo={pageInfo}
+          query={FETCH_ALL_PRODUCTS_QUERY}
+        />
+      </div>
+    </Layout>
+  );
+};
+export const runtime = 'experimental-edge';
+export default Products;
+export const getStaticProps: GetStaticProps = async () => {
+  const { data, loading, networkStatus } = await client.query({
+    query: FETCH_ALL_PRODUCTS_QUERY,
+  });
+  return {
+    props: {
+      products: data.products.nodes,
+      pageInfo: data.products.pageInfo,
+      loading,
+      networkStatus,
+    },
+    revalidate: 60,
+  };
+};
 ````
 
 ## File: src/stores/globalStore.ts
@@ -20059,6 +19816,42 @@ export const useReviewsStore = create<ReviewsState>()(
         }
     )
 );
+````
+
+## File: CLOUDFLARE_DEPLOY.md
+````markdown
+# Deploying to Cloudflare Pages
+
+1. **Commit & Push**: Ensure all changes (including `package.json` and `next.config.js`) are pushed to your git repository.
+
+2. **Cloudflare Dashboard**:
+   - Go to Cloudflare Pages.
+   - "Connect to Git" and select this repository.
+
+3. **Build Settings**:
+   - **Framework Preset**: `Next.js`
+   - **Build Command**: `npx @cloudflare/next-on-pages` (or `npm run pages:build`)
+   - **Output Directory**: `.vercel/output/static` (Important: next-on-pages outputs here)
+   - **Node Version**: Set an Environment Variable `NODE_VERSION` to `20` (or compatible).
+
+4. **Environment Variables** (CRITICAL):
+   - You noted "Environment variables: None". **This will cause the app to fail.**
+   - You MUST add your keys (e.g., `NEXT_PUBLIC_GRAPHQL_URL`, `NEXT_PUBLIC_REST_API_URL`).
+   - Copy them from your local `.env` file.
+
+5. **Deploy**:
+   - Save the settings.
+   - Go to "Deployments" and trigger a new deployment (or push a commit).
+
+## Troubleshooting Your Current Error
+You received `[ERROR] Missing entry-point`. This happened because your configuration was:
+- Build command: `npm run build` (WRONG - this is for standard Node servers)
+- Deploy command: `npx wrangler deploy` (WRONG - Pages handles this)
+
+**Correct Configuration:**
+- **Build command:** `npm run pages:build`
+- **Build output directory:** `.vercel/output/static`
+- **Deploy command:** (Leave empty / default)
 ````
 
 ## File: src/components/Index/AirConditionerProducts.component.tsx
@@ -21426,6 +21219,164 @@ const ProductLocationDisplay = () => {
 export default ProductLocationDisplay;
 ````
 
+## File: src/pages/categories.tsx
+````typescript
+import { NextPage, InferGetStaticPropsType, GetStaticProps } from 'next';
+import Categories from '@/components/Category/Categories.component';
+import Layout from '@/components/Layout/Layout.component';
+import client from '@/utils/apollo/ApolloClient';
+import { FETCH_ALL_CATEGORIES_QUERY } from '@/utils/gql/GQL_QUERIES';
+/**
+ * Category page displays all of the categories
+ */
+const categories: NextPage = ({
+  categories,
+}: InferGetStaticPropsType<typeof getStaticProps>) => (
+  <Layout title="categories">
+    {categories && <Categories categories={categories} />}
+  </Layout>
+);
+export const runtime = 'experimental-edge';
+export default categories;
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const result = await client.query({
+      query: FETCH_ALL_CATEGORIES_QUERY,
+    });
+    return {
+      props: {
+        categories: result.data?.productCategories?.nodes || [],
+      },
+      revalidate: 60,
+    };
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return {
+      props: {
+        categories: [],
+      },
+      revalidate: 10,
+    };
+  }
+};
+````
+
+## File: next.config.js
+````javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  compress: true,
+  compiler: {
+    removeConsole: false,
+  },
+  experimental: {
+    // allowedDevOrigins removed as it causes validation error
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'swewoocommerce.dfweb.no',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'web.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopwice.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+        pathname: '**',
+      },
+    ],
+    minimumCacheTTL: 60,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 90],
+    unoptimized: true,
+  },
+  i18n: {
+    locales: ['en'],
+    defaultLocale: 'en',
+  },
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|png|webp|avif|js|css|woff2)',
+        locale: false,
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/graphql',
+        destination: 'https://api.shopwice.com/graphql',
+      },
+      {
+        source: '/api/:path*',
+        destination: 'https://api.shopwice.com/api/:path*',
+      },
+    ];
+  },
+};
+module.exports = nextConfig;
+````
+
 ## File: package.json
 ````json
 {
@@ -21910,122 +21861,6 @@ export const getStaticProps: GetStaticProps = async () => {
 };
 ````
 
-## File: next.config.js
-````javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  compress: true,
-  compiler: {
-    removeConsole: false,
-  },
-  experimental: {
-    // allowedDevOrigins removed as it causes validation error
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'swewoocommerce.dfweb.no',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'web.shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopwice.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-        pathname: '**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-        pathname: '**',
-      },
-    ],
-    minimumCacheTTL: 60,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    qualities: [75, 90],
-    unoptimized: true,
-  },
-  i18n: {
-    locales: ['en'],
-    defaultLocale: 'en',
-  },
-  async headers() {
-    return [
-      {
-        source: '/:all*(svg|jpg|png|webp|avif|js|css|woff2)',
-        locale: false,
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ],
-      },
-    ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/graphql',
-        destination: 'https://api.shopwice.com/graphql',
-      },
-      {
-        source: '/api/:path*',
-        destination: 'https://api.shopwice.com/api/:path*',
-      },
-    ];
-  },
-};
-module.exports = nextConfig;
-````
-
 ## File: src/components/Product/ProductCard.component.tsx
 ````typescript
 import { useState, useEffect } from 'react';
@@ -22216,177 +22051,6 @@ const ProductCard = ({
   );
 };
 export default ProductCard;
-````
-
-## File: src/pages/product/[slug].tsx
-````typescript
-// Imports - Updated Layout
-import { withRouter } from 'next/router';
-import { useRouter } from 'next/router';
-// Components
-import SingleProduct from '@/components/Product/SingleProductFinal.component';
-import Layout from '@/components/Layout/Layout.component';
-// Utilities
-import client from '@/utils/apollo/ApolloClient';
-// Types
-import type {
-  NextPage,
-  GetServerSideProps,
-  InferGetServerSidePropsType,
-} from 'next';
-// GraphQL
-import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
-import { NextSeo, ProductJsonLd } from 'next-seo';
-/**
- * Display a single product with dynamic pretty urls
- * @function product
- * @param {InferGetServerSidePropsType<typeof getServerSideProps>} products
- * @returns {JSX.Element} - Rendered component
- */
-const product: NextPage = ({
-  product,
-  loading,
-  networkStatus,
-  isMobilePhone,
-  isRefurbished
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const router = useRouter();
-  const hasError = networkStatus === 8;
-  // --- SEO Preparation ---
-  // Safely extract data
-  const name = product?.name || 'Product';
-  const slug = product?.slug || '';
-  const description = product?.shortDescription?.replace(/<[^>]+>/g, '') || product?.description?.replace(/<[^>]+>/g, '').substring(0, 160) || '';
-  const mainImage = product?.image?.sourceUrl || '';
-  const gallery = product?.galleryImages?.nodes?.map((img: { sourceUrl: string }) => img.sourceUrl) || [];
-  const images = [mainImage, ...gallery].filter(Boolean).map(url => ({ url }));
-  // RankMath SEO Data (Fallback to Product Data)
-  const seo = product?.seo;
-  const seoTitle = seo?.title || name;
-  const seoDescription = seo?.description || description;
-  // Price & Currency (Assuming simple product for base price, or low price for variable)
-  // Converting 'GH₵100' -> 100
-  const rawPrice = product?.price || product?.salePrice || product?.regularPrice || '0';
-  const priceAmount = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
-  const currency = 'GHS'; // Ghana Cedis
-  // Stock
-  const isInstock = product?.stockStatus !== 'OUT_OF_STOCK';
-  const availability = isInstock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
-  // Ratings
-  const ratingValue = product?.averageRating || 0;
-  const reviewCount = product?.reviewCount || 0;
-  return (
-    <>
-      {product && (
-        <>
-          <NextSeo
-            title={seoTitle}
-            description={seoDescription}
-            canonical={`https://shopwice.com/product/${slug}`}
-            openGraph={{
-              type: 'product',
-              url: `https://shopwice.com/product/${slug}`,
-              title: seoTitle,
-              description: seoDescription,
-              images: images,
-            }}
-          />
-          <ProductJsonLd
-            productName={name}
-            images={images.map(i => i.url)}
-            description={description}
-            brand="Shopwice" // Or product.productBrand if available
-            // sku={product.sku} // Add to query if not present
-            offers={[
-              {
-                price: priceAmount.toString(),
-                priceCurrency: currency,
-                itemCondition: 'https://schema.org/NewCondition', // Assuming new
-                availability: availability,
-                url: `https://shopwice.com/product/${slug}`,
-                seller: {
-                  name: 'Shopwice',
-                },
-              },
-            ]}
-            aggregateRating={
-              reviewCount > 0
-                ? {
-                  ratingValue: ratingValue.toString(),
-                  reviewCount: reviewCount.toString(),
-                }
-                : undefined
-            }
-          />
-        </>
-      )}
-      <Layout title={`${product?.name ? product.name : ''}`} fullWidth>
-        {product ? (
-          <SingleProduct
-            product={product}
-            loading={loading}
-            isMobilePhone={isMobilePhone}
-            isRefurbished={isRefurbished}
-          />
-        ) : (
-          <div className="mt-8 text-2xl text-center">Loading product...</div>
-        )}
-        {hasError && (
-          <div className="mt-8 text-2xl text-center">
-            Error loading product...
-          </div>
-        )}
-      </Layout>
-    </>
-  );
-};
-export default withRouter(product);
-export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
-  try {
-    // Cache control for Server Side Rendering (s-maxage=60, stale-while-revalidate=59)
-    res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=60, stale-while-revalidate=59'
-    );
-    console.log('Fetching product for slug:', params?.slug);
-    const { data, loading, networkStatus } = await client.query({
-      query: GET_SINGLE_PRODUCT,
-      variables: { slug: params?.slug },
-      fetchPolicy: 'no-cache'
-    });
-    const product = data.product;
-    if (!product) {
-      return { notFound: true };
-    }
-    // Server-side calculation for stability
-    const isMobilePhone = product.productCategories?.nodes?.some(
-      (cat: any) =>
-        (cat.name && cat.name.toLowerCase() === 'mobile phones') ||
-        (cat.slug && cat.slug === 'mobile-phones')
-    ) || false;
-    // Permissive check for refurbished status
-    const isRefurbished = product.attributes?.nodes?.some((attr: any) =>
-      attr.options?.some((opt: any) =>
-        String(opt).toLowerCase().includes('refurbish')
-      )
-    ) || false;
-    console.log(`[SSR] Product: ${product.name}`);
-    console.log(`[SSR] Attributes:`, JSON.stringify(product.attributes?.nodes || [], null, 2));
-    console.log(`[SSR] isMobilePhone: ${isMobilePhone}, isRefurbished: ${isRefurbished}`);
-    return {
-      props: {
-        product,
-        loading,
-        networkStatus,
-        isMobilePhone,
-        isRefurbished
-      },
-    };
-  } catch (error) {
-    console.error(error);
-    return { notFound: true };
-  }
-};
 ````
 
 ## File: src/utils/apollo/ApolloClient.js
@@ -22668,6 +22332,178 @@ const RecentRefurbishedReviewsREST = () => {
     );
 };
 export default RecentRefurbishedReviewsREST;
+````
+
+## File: src/pages/product/[slug].tsx
+````typescript
+// Imports - Updated Layout
+import { withRouter } from 'next/router';
+import { useRouter } from 'next/router';
+// Components
+import SingleProduct from '@/components/Product/SingleProductFinal.component';
+import Layout from '@/components/Layout/Layout.component';
+// Utilities
+import client from '@/utils/apollo/ApolloClient';
+// Types
+import type {
+  NextPage,
+  GetServerSideProps,
+  InferGetServerSidePropsType,
+} from 'next';
+// GraphQL
+import { GET_SINGLE_PRODUCT, FETCH_ALL_PRODUCTS_QUERY } from '@/utils/gql/GQL_QUERIES';
+import { NextSeo, ProductJsonLd } from 'next-seo';
+/**
+ * Display a single product with dynamic pretty urls
+ * @function product
+ * @param {InferGetServerSidePropsType<typeof getServerSideProps>} products
+ * @returns {JSX.Element} - Rendered component
+ */
+const product: NextPage = ({
+  product,
+  loading,
+  networkStatus,
+  isMobilePhone,
+  isRefurbished
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+  const router = useRouter();
+  const hasError = networkStatus === 8;
+  // --- SEO Preparation ---
+  // Safely extract data
+  const name = product?.name || 'Product';
+  const slug = product?.slug || '';
+  const description = product?.shortDescription?.replace(/<[^>]+>/g, '') || product?.description?.replace(/<[^>]+>/g, '').substring(0, 160) || '';
+  const mainImage = product?.image?.sourceUrl || '';
+  const gallery = product?.galleryImages?.nodes?.map((img: { sourceUrl: string }) => img.sourceUrl) || [];
+  const images = [mainImage, ...gallery].filter(Boolean).map(url => ({ url }));
+  // RankMath SEO Data (Fallback to Product Data)
+  const seo = product?.seo;
+  const seoTitle = seo?.title || name;
+  const seoDescription = seo?.description || description;
+  // Price & Currency (Assuming simple product for base price, or low price for variable)
+  // Converting 'GH₵100' -> 100
+  const rawPrice = product?.price || product?.salePrice || product?.regularPrice || '0';
+  const priceAmount = parseFloat(rawPrice.replace(/[^0-9.]/g, '')) || 0;
+  const currency = 'GHS'; // Ghana Cedis
+  // Stock
+  const isInstock = product?.stockStatus !== 'OUT_OF_STOCK';
+  const availability = isInstock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock';
+  // Ratings
+  const ratingValue = product?.averageRating || 0;
+  const reviewCount = product?.reviewCount || 0;
+  return (
+    <>
+      {product && (
+        <>
+          <NextSeo
+            title={seoTitle}
+            description={seoDescription}
+            canonical={`https://shopwice.com/product/${slug}`}
+            openGraph={{
+              type: 'product',
+              url: `https://shopwice.com/product/${slug}`,
+              title: seoTitle,
+              description: seoDescription,
+              images: images,
+            }}
+          />
+          <ProductJsonLd
+            productName={name}
+            images={images.map(i => i.url)}
+            description={description}
+            brand="Shopwice" // Or product.productBrand if available
+            // sku={product.sku} // Add to query if not present
+            offers={[
+              {
+                price: priceAmount.toString(),
+                priceCurrency: currency,
+                itemCondition: 'https://schema.org/NewCondition', // Assuming new
+                availability: availability,
+                url: `https://shopwice.com/product/${slug}`,
+                seller: {
+                  name: 'Shopwice',
+                },
+              },
+            ]}
+            aggregateRating={
+              reviewCount > 0
+                ? {
+                  ratingValue: ratingValue.toString(),
+                  reviewCount: reviewCount.toString(),
+                }
+                : undefined
+            }
+          />
+        </>
+      )}
+      <Layout title={`${product?.name ? product.name : ''}`} fullWidth>
+        {product ? (
+          <SingleProduct
+            product={product}
+            loading={loading}
+            isMobilePhone={isMobilePhone}
+            isRefurbished={isRefurbished}
+          />
+        ) : (
+          <div className="mt-8 text-2xl text-center">Loading product...</div>
+        )}
+        {hasError && (
+          <div className="mt-8 text-2xl text-center">
+            Error loading product...
+          </div>
+        )}
+      </Layout>
+    </>
+  );
+};
+export const runtime = 'experimental-edge';
+export default withRouter(product);
+export const getServerSideProps: GetServerSideProps = async ({ params, res }) => {
+  try {
+    // Cache control for Server Side Rendering (s-maxage=60, stale-while-revalidate=59)
+    res.setHeader(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=59'
+    );
+    console.log('Fetching product for slug:', params?.slug);
+    const { data, loading, networkStatus } = await client.query({
+      query: GET_SINGLE_PRODUCT,
+      variables: { slug: params?.slug },
+      fetchPolicy: 'no-cache'
+    });
+    const product = data.product;
+    if (!product) {
+      return { notFound: true };
+    }
+    // Server-side calculation for stability
+    const isMobilePhone = product.productCategories?.nodes?.some(
+      (cat: any) =>
+        (cat.name && cat.name.toLowerCase() === 'mobile phones') ||
+        (cat.slug && cat.slug === 'mobile-phones')
+    ) || false;
+    // Permissive check for refurbished status
+    const isRefurbished = product.attributes?.nodes?.some((attr: any) =>
+      attr.options?.some((opt: any) =>
+        String(opt).toLowerCase().includes('refurbish')
+      )
+    ) || false;
+    console.log(`[SSR] Product: ${product.name}`);
+    console.log(`[SSR] Attributes:`, JSON.stringify(product.attributes?.nodes || [], null, 2));
+    console.log(`[SSR] isMobilePhone: ${isMobilePhone}, isRefurbished: ${isRefurbished}`);
+    return {
+      props: {
+        product,
+        loading,
+        networkStatus,
+        isMobilePhone,
+        isRefurbished
+      },
+    };
+  } catch (error) {
+    console.error(error);
+    return { notFound: true };
+  }
+};
 ````
 
 ## File: src/utils/gql/GQL_QUERIES.ts
